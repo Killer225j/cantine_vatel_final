@@ -163,7 +163,7 @@ const FORME_VIDE: Forme = {
           >
         </div>
 
-        <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-5">
+        <div class="grid gap-2.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           @for (j of s.jours; track j.date) {
             <section
               class="bg-white rounded-xl shadow-sm border flex flex-col min-w-0"
@@ -175,14 +175,16 @@ const FORME_VIDE: Forme = {
               [attr.aria-label]="j.date"
             >
               <div
-                class="flex items-start justify-between gap-2 px-4 pt-4 pb-3 border-b border-gray-100"
+                class="flex items-start justify-between gap-1.5 px-3 pt-2.5 pb-2 border-b border-gray-100"
               >
                 <div>
-                  <p class="font-bold text-gray-800 capitalize">{{ j.date | date: 'EEEE' }}</p>
-                  <p class="text-xs text-gray-500">{{ j.date | date: 'd MMMM' }}</p>
+                  <p class="text-sm font-bold text-gray-800 capitalize leading-tight">
+                    {{ j.date | date: 'EEEE' }}
+                  </p>
+                  <p class="text-[11px] text-gray-500">{{ j.date | date: 'd MMMM' }}</p>
                 </div>
                 <span
-                  class="text-xs font-semibold rounded-full px-2.5 py-1 whitespace-nowrap"
+                  class="text-[10px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap"
                   [class]="etat(j).classe"
                 >
                   <i class="pi {{ etat(j).icone }} text-[10px] mr-1" aria-hidden="true"></i
@@ -190,9 +192,11 @@ const FORME_VIDE: Forme = {
                 </span>
               </div>
 
-              <div class="px-3 py-3 flex-1 space-y-2.5">
+              <div class="px-2 py-2 flex-1 space-y-1.5">
                 @if (j.items.length && !j.publie) {
-                  <p class="flex gap-2 text-xs text-warning bg-amber-50 rounded-lg px-2.5 py-2">
+                  <p
+                    class="flex gap-1.5 text-[11px] leading-snug text-warning bg-amber-50 rounded-lg px-2 py-1.5"
+                  >
                     <i class="pi pi-eye-slash mt-0.5" aria-hidden="true"></i>
                     <span
                       ><strong>Menu non publié</strong> : invisible pour les élèves, aucune
@@ -201,29 +205,31 @@ const FORME_VIDE: Forme = {
                   </p>
                 }
                 @for (i of j.items; track i.id) {
-                  <article class="rounded-lg border border-gray-100 bg-[#f9fbfd] px-3 py-2.5">
+                  <article class="rounded-lg border border-gray-100 bg-[#f9fbfd] px-2 py-1.5">
                     <div class="flex items-start justify-between gap-2">
                       <div class="min-w-0">
-                        <p class="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">
+                        <p class="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">
                           {{ cat(i.plat.categorie) }}
                         </p>
-                        <p class="font-semibold text-gray-800 leading-snug">{{ i.plat.nom }}</p>
+                        <p class="text-[13px] font-semibold text-gray-800 leading-tight">
+                          {{ i.plat.nom }}
+                        </p>
                       </div>
                       @if (modifiable(j)) {
                         <button
                           type="button"
                           (click)="ouvrirEdition(j, i)"
-                          class="w-7 h-7 rounded-md text-gray-400 hover:text-vatel-primary hover:bg-white shrink-0"
+                          class="w-6 h-6 rounded-md text-gray-400 hover:text-vatel-primary hover:bg-white shrink-0"
                           [attr.aria-label]="'Modifier ' + i.plat.nom"
                         >
                           <i class="pi pi-pencil text-xs" aria-hidden="true"></i>
                         </button>
                       }
                     </div>
-                    <div class="flex flex-wrap gap-1 mt-1.5">
+                    <div class="flex flex-wrap gap-1 mt-1">
                       @for (a of i.plat.allergenes; track a.code) {
                         <span
-                          class="text-[11px] rounded-full px-2 py-0.5 font-medium"
+                          class="text-[10px] rounded-full px-1.5 py-px font-medium"
                           [class]="
                             a.code === 'ARACHIDES'
                               ? 'bg-red-50 text-error'
@@ -238,8 +244,10 @@ const FORME_VIDE: Forme = {
                         >
                       }
                     </div>
-                    <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
-                      <span class="font-bold text-vatel-primary-dark text-sm"
+                    <div
+                      class="flex flex-wrap items-baseline justify-between gap-x-2 mt-1 text-[11px] text-gray-500"
+                    >
+                      <span class="font-bold text-vatel-primary-dark text-xs"
                         >{{ i.plat.prix }} FCFA</span
                       >
                       <span>{{ i.portionsPrevues ?? '—' }} portions</span>
@@ -250,7 +258,7 @@ const FORME_VIDE: Forme = {
                   <button
                     type="button"
                     (click)="ouvrirAjout(j)"
-                    class="w-full rounded-lg border-2 border-dashed border-gray-200 text-gray-500 text-sm font-semibold py-2.5 hover:border-vatel-primary hover:text-vatel-primary"
+                    class="w-full rounded-lg border-2 border-dashed border-gray-200 text-gray-500 text-xs font-semibold py-1.5 hover:border-vatel-primary hover:text-vatel-primary"
                   >
                     <i class="pi pi-plus text-xs mr-1.5" aria-hidden="true"></i>Ajouter un plat
                   </button>
@@ -258,14 +266,14 @@ const FORME_VIDE: Forme = {
               </div>
 
               <div
-                class="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-100 text-xs text-gray-500"
+                class="flex items-center justify-between gap-1.5 px-3 py-2 border-t border-gray-100 text-[11px] text-gray-500"
               >
                 <span>{{ j.items.length }} plats · {{ total(j) }} portions</span>
                 @if (j.items.length && !j.publie && modifiable(j)) {
                   <button
                     type="button"
                     (click)="confirmation.set({ jours: [j] })"
-                    class="px-3 py-1.5 rounded-lg bg-vatel-primary text-white text-xs font-semibold hover:bg-vatel-primary-dark"
+                    class="px-2 py-1 rounded-md bg-vatel-primary text-white text-[11px] font-semibold hover:bg-vatel-primary-dark"
                   >
                     <i class="pi pi-send mr-1" aria-hidden="true"></i>Publier
                   </button>
@@ -293,7 +301,7 @@ const FORME_VIDE: Forme = {
           (action)="charger()"
       /></app-card>
     } @else {
-      <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-5">
+      <div class="grid gap-2.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         @for (i of [1, 2, 3, 4, 5]; track i) {
           <app-skeleton height="360px" radius="12px" />
         }
@@ -303,17 +311,19 @@ const FORME_VIDE: Forme = {
     <!-- ─── Modale : ajouter / modifier un plat du jour ─────────── -->
     @if (forme(); as f) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3"
         (click)="forme.set(null)"
       >
         <div
-          class="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-6"
+          class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] flex flex-col"
           (click)="$event.stopPropagation()"
           role="dialog"
           aria-modal="true"
           aria-labelledby="m-titre"
         >
-          <div class="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+          <div
+            class="shrink-0 flex items-center justify-between px-5 pt-4 pb-2.5 border-b border-gray-100"
+          >
             <h3 id="m-titre" class="text-lg font-bold text-gray-800">
               {{ f.itemId ? 'Modifier le plat' : 'Ajouter un plat' }}
             </h3>
@@ -326,7 +336,7 @@ const FORME_VIDE: Forme = {
               <i class="pi pi-times" aria-hidden="true"></i>
             </button>
           </div>
-          <div class="px-6 py-4 space-y-4">
+          <div class="flex-1 overflow-y-auto px-5 py-3 space-y-3">
             <p
               class="flex items-center gap-2 text-sm bg-[#e7f3fc] text-vatel-primary-dark rounded-lg px-3 py-2"
             >
@@ -495,7 +505,7 @@ const FORME_VIDE: Forme = {
               ><input type="checkbox" [(ngModel)]="f.vegetarien" />Plat végétarien</label
             >
           </div>
-          <div class="flex flex-wrap justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <div class="shrink-0 flex flex-wrap justify-end gap-2 px-5 py-3 border-t border-gray-100">
             @if (f.itemId) {
               <button
                 type="button"
@@ -532,7 +542,7 @@ const FORME_VIDE: Forme = {
         (click)="confirmation.set(null)"
       >
         <div
-          class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center"
+          class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[92vh] overflow-y-auto p-5 text-center"
           (click)="$event.stopPropagation()"
           role="alertdialog"
           aria-modal="true"

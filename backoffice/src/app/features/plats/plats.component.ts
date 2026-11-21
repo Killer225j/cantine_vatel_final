@@ -199,11 +199,11 @@ const VIDE: Brouillon = {
 
     @if (brouillon(); as b) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3"
         (click)="brouillon.set(null)"
       >
         <div
-          class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-6 my-6"
+          class="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[92vh] overflow-y-auto p-5"
           (click)="$event.stopPropagation()"
           role="dialog"
           aria-modal="true"
