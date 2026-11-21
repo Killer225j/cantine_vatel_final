@@ -11,7 +11,7 @@ Application de gestion de la cantine de **Vatel Abidjan** — Hackathon Restaura
 |---|---|
 | **Back-office** (administration et cuisine) | <https://cantine-vatel-backoffice.vercel.app> |
 | **API** (Swagger) | <https://cantine-vatel-api.onrender.com/api/docs> |
-| **Appli mobile** (APK Android) | lien de téléchargement sur la page de connexion du back-office |
+| **Appli mobile** (APK Android) | [Télécharger l'APK](https://expo.dev/artifacts/eas/ihyN6g2QBOTmz8xojb5D5DRNvwi4tCMKSS-hMbOufBE.apk), ou le bouton sur la page de connexion du back-office |
 | **Dépôt** | <https://github.com/Killer225j/cantine_vatel_final> |
 
 > L'API est hébergée sur l'offre gratuite de Render : elle se met en veille après 15 minutes. La première requête peut prendre une trentaine de secondes.

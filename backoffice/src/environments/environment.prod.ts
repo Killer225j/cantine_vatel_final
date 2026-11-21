@@ -3,5 +3,5 @@ export const environment = {
   production: true,
   apiUrl: 'https://cantine-vatel-api.onrender.com/api/v1',
   /** Lien de téléchargement de l'APK (EAS). Vide tant que le build n'est pas terminé. */
-  apkUrl: '',
+  apkUrl: 'https://expo.dev/artifacts/eas/ihyN6g2QBOTmz8xojb5D5DRNvwi4tCMKSS-hMbOufBE.apk',
 };
