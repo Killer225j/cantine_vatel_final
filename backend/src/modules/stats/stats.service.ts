@@ -103,6 +103,34 @@ export class StatsService {
     };
   }
 
+  /**
+   * Réservations des derniers jours de service (jusqu'à `jours`, aujourd'hui compris) : réservées,
+   * servies et absentes par date. Seuls les jours qui ont eu des réservations comptent.
+   */
+  async reservationsParJour(jours = 7, jour = aujourdhui()) {
+    const groupes = await this.prisma.reservation.groupBy({
+      by: ['date', 'statut'],
+      where: {
+        date: { gte: versDate(ajouterJours(jour, -(jours * 2 + 4))), lte: versDate(jour) },
+        statut: NON_ANNULEE,
+      },
+      _count: { _all: true },
+    });
+    const parJour = new Map<string, { reservees: number; servies: number; absents: number }>();
+    for (const g of groupes) {
+      const cle = g.date.toISOString().slice(0, 10);
+      const ligne = parJour.get(cle) ?? { reservees: 0, servies: 0, absents: 0 };
+      ligne.reservees += g._count._all;
+      if (g.statut === StatutReservation.SERVIE) ligne.servies += g._count._all;
+      if (g.statut === StatutReservation.ABSENT) ligne.absents += g._count._all;
+      parJour.set(cle, ligne);
+    }
+    return [...parJour.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-jours)
+      .map(([date, v]) => ({ date, ...v }));
+  }
+
   /** Prévision anti-gaspi par plat : réservés, absents prévus, portions à préparer. */
   async prevision(jour = aujourdhui()) {
     const [menu, taux] = await Promise.all([

@@ -40,13 +40,42 @@ export class PlatsService {
       }),
       this.prisma.plat.count({ where }),
     ]);
-    const notes = await this.notesMoyennes(plats.map((p) => p.id));
+    const [notes, servis] = await Promise.all([
+      this.notesMoyennes(plats.map((p) => p.id)),
+      this.servisDuMois(plats.map((p) => p.id)),
+    ]);
     return paginate(
-      plats.map((p) => ({ ...p, ...(notes.get(p.id) ?? { noteMoyenne: null, nbAvis: 0 }) })),
+      plats.map((p) => ({
+        ...p,
+        ...(notes.get(p.id) ?? { noteMoyenne: null, nbAvis: 0 }),
+        servisMois: servis.get(p.id) ?? 0,
+      })),
       total,
       page,
       limit,
     );
+  }
+
+  /** Nombre de repas servis depuis le début du mois, par plat. */
+  async servisDuMois(ids: string[], maintenant = new Date()): Promise<Map<string, number>> {
+    if (!ids.length) return new Map();
+    const debutMois = new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), 1));
+    const groupes = await this.prisma.reservation.groupBy({
+      by: ['menuItemId'],
+      where: { statut: 'SERVIE', date: { gte: debutMois }, menuItem: { platId: { in: ids } } },
+      _count: { _all: true },
+    });
+    const items = await this.prisma.menuItem.findMany({
+      where: { id: { in: groupes.map((g) => g.menuItemId) } },
+      select: { id: true, platId: true },
+    });
+    const platDe = new Map(items.map((i) => [i.id, i.platId]));
+    const total = new Map<string, number>();
+    for (const g of groupes) {
+      const platId = platDe.get(g.menuItemId);
+      if (platId) total.set(platId, (total.get(platId) ?? 0) + g._count._all);
+    }
+    return total;
   }
 
   async detail(id: string) {

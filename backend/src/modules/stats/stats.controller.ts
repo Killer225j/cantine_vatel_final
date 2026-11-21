@@ -30,6 +30,16 @@ export class StatsController {
     return this.stats.jour(dto.date);
   }
 
+  @Get('reservations')
+  @ApiOperation({
+    summary: 'Réservations des 7 derniers jours de service',
+    description:
+      'Par date : réservées, servies et absentes. Alimente le graphique du tableau de bord.',
+  })
+  reservations(@Query() dto: JourDto) {
+    return this.stats.reservationsParJour(7, dto.date);
+  }
+
   @Get('prevision')
   @ApiOperation({ summary: 'Prévision anti-gaspi par plat : réservés × (1 − absence) + 5 %' })
   prevision(@Query() dto: JourDto) {
