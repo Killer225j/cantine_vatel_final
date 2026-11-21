@@ -67,7 +67,7 @@ Couleurs de l'école Vatel : le bleu ciel du logo (`#87c1eb`) pour les accents, 
 
 - back-office : palette Tailwind `vatel` dans `backoffice/tailwind.config.js`, variables `$vatel-*` dans `backoffice/src/styles.scss`, jetons `$cv-*` dans `backoffice/src/app/shared/styles/_tokens.scss`, thème Material (`mat.$azure-palette`) ;
 - mobile : `mobile/src/constants/colors.ts` ;
-- logos : `backoffice/public/logo.svg` et `mobile/assets/*.png`.
+- logos : `backoffice/public/logo.png` et `mobile/assets/*.png`.
 
 ## Comptes de démonstration
 
