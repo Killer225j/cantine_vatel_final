@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   Allergene,
   CantineApi,
@@ -14,6 +15,7 @@ import { CardComponent } from '../../shared/components/ui/card/card.component';
 import { EmptyStateComponent } from '../../shared/components/ui/empty-state/empty-state.component';
 import { PhotoPlatComponent } from '../../shared/components/ui/photo-plat/photo-plat.component';
 import { SkeletonComponent } from '../../shared/components/ui/skeleton/skeleton.component';
+import { StatTileComponent } from '../../shared/components/ui/stat-tile/stat-tile.component';
 
 const PHOTOS = 'https://cantine-vatel-backoffice.vercel.app/plats/';
 
@@ -46,6 +48,8 @@ const VIDE: Brouillon = {
   standalone: true,
   imports: [
     FormsModule,
+    RouterLink,
+    StatTileComponent,
     BadgeComponent,
     CardComponent,
     EmptyStateComponent,
@@ -54,50 +58,78 @@ const VIDE: Brouillon = {
   ],
   template: `
     <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Plats</h1>
+      <div class="max-w-2xl">
+        <h1 class="text-2xl font-bold text-gray-800">Catalogue des plats</h1>
         <p class="text-sm text-vatel-primary mt-0.5">
-          Le catalogue : prix, allergènes, photo et avis des élèves.
+          Tous les plats utilisables dans les menus, avec leurs allergènes et la note donnée par les
+          élèves.
         </p>
       </div>
-      <button
-        type="button"
-        (click)="nouveau()"
-        class="px-4 py-2 rounded-lg bg-vatel-primary text-white text-sm font-semibold hover:bg-vatel-primary-dark"
-      >
-        <i class="pi pi-plus text-xs mr-1.5"></i>Nouveau plat
-      </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          routerLink="/menus"
+          class="px-3.5 py-2 rounded-lg border border-vatel-primary text-vatel-primary text-sm font-semibold hover:bg-[#e7f3fc]"
+        >
+          <i class="pi pi-calendar mr-1.5" aria-hidden="true"></i>Menus de la semaine
+        </a>
+        <button
+          type="button"
+          (click)="nouveau()"
+          class="px-3.5 py-2 rounded-lg bg-vatel-primary text-white text-sm font-semibold hover:bg-vatel-primary-dark"
+        >
+          <i class="pi pi-plus mr-1.5" aria-hidden="true"></i>Nouveau plat
+        </button>
+      </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
       @for (t of tuiles(); track t.label) {
-        <div class="bg-white rounded-xl p-4 shadow-sm">
-          <p class="text-2xl font-bold text-vatel-primary-dark truncate">{{ t.valeur }}</p>
-          <p class="text-xs text-gray-500 mt-1">{{ t.label }}</p>
+        <div class="flex flex-col">
+          <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
+          <span class="text-[11px] text-gray-500 mt-1.5 px-1">{{ t.detail }}</span>
         </div>
       }
     </div>
 
     <app-card>
       <div class="flex flex-wrap items-center gap-2 mb-4">
-        <input
-          type="search"
-          placeholder="Rechercher un plat"
-          [ngModel]="recherche()"
-          (ngModelChange)="recherche.set($event)"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-60 focus:outline-none focus:border-vatel-primary"
-        />
-        <select
-          [ngModel]="filtreCategorie()"
-          (ngModelChange)="filtreCategorie.set($event)"
-          class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
-        >
-          <option value="">Toutes les catégories</option>
-          @for (c of categories; track c.code) {
-            <option [value]="c.code">{{ c.libelle }}</option>
+        <div class="relative">
+          <i
+            class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+            aria-hidden="true"
+          ></i>
+          <input
+            type="search"
+            placeholder="Rechercher un plat…"
+            aria-label="Rechercher un plat"
+            [ngModel]="recherche()"
+            (ngModelChange)="recherche.set($event)"
+            class="border border-gray-300 rounded-full pl-9 pr-3 py-2 text-sm w-64 focus:outline-none focus:border-vatel-primary"
+          />
+        </div>
+        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Catégorie">
+          @for (c of filtresCategorie(); track c.code) {
+            <button
+              type="button"
+              (click)="filtreCategorie.set(c.code)"
+              class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold"
+              [class]="
+                filtreCategorie() === c.code
+                  ? 'bg-vatel-primary border-vatel-primary text-white'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+              "
+              [attr.aria-pressed]="filtreCategorie() === c.code"
+            >
+              {{ c.libelle }}
+              <span
+                class="text-[11px] rounded-full px-1.5"
+                [class]="filtreCategorie() === c.code ? 'bg-white/25' : 'bg-gray-100'"
+                >{{ c.n }}</span
+              >
+            </button>
           }
-        </select>
-        <label class="flex items-center gap-1.5 text-sm text-gray-700">
+        </div>
+        <label class="ml-auto flex items-center gap-1.5 text-sm text-gray-700">
           <input
             type="checkbox"
             [ngModel]="seulementArachide()"
@@ -105,7 +137,6 @@ const VIDE: Brouillon = {
           />
           Avec arachide uniquement
         </label>
-        <span class="ml-auto text-xs text-gray-500">{{ visibles().length }} plats</span>
       </div>
 
       @if (!chargement()) {
@@ -151,8 +182,11 @@ const VIDE: Brouillon = {
                     </td>
                     <td class="py-2.5 pr-3">
                       @if (p.noteMoyenne !== null) {
-                        ★ {{ p.noteMoyenne }}
-                        <span class="text-xs text-gray-500">({{ p.nbAvis }})</span>
+                        <span class="text-amber-400 tracking-tight" aria-hidden="true">{{
+                          etoiles(p.noteMoyenne)
+                        }}</span>
+                        <span class="font-semibold ml-1">{{ p.noteMoyenne }}</span>
+                        <span class="text-xs text-gray-500">({{ p.nbAvis }} avis)</span>
                       } @else {
                         <span class="text-gray-400">—</span>
                       }
@@ -166,16 +200,24 @@ const VIDE: Brouillon = {
                       <button
                         type="button"
                         (click)="modifier(p)"
-                        class="text-vatel-primary hover:underline text-sm font-semibold mr-3"
+                        class="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:text-vatel-primary hover:border-vatel-primary mr-1.5"
+                        [attr.aria-label]="'Modifier ' + p.nom"
+                        title="Modifier"
                       >
-                        Modifier
+                        <i class="pi pi-pencil text-xs" aria-hidden="true"></i>
                       </button>
                       <button
                         type="button"
                         (click)="basculerActif(p)"
-                        class="text-gray-500 hover:underline text-sm"
+                        class="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:text-error hover:border-error"
+                        [attr.aria-label]="(p.actif ? 'Désactiver ' : 'Réactiver ') + p.nom"
+                        [title]="p.actif ? 'Désactiver' : 'Réactiver'"
                       >
-                        {{ p.actif ? 'Désactiver' : 'Réactiver' }}
+                        <i
+                          class="pi text-xs"
+                          [class]="p.actif ? 'pi-ban' : 'pi-replay'"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     </td>
                   </tr>
@@ -199,7 +241,7 @@ const VIDE: Brouillon = {
 
     @if (brouillon(); as b) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3"
+        class="fixed inset-0 z-[3000] bg-black/40 flex items-center justify-center p-3"
         (click)="brouillon.set(null)"
       >
         <div
@@ -359,15 +401,46 @@ export class PlatsComponent implements OnInit {
       : null;
     const meilleur = [...notes].sort((a, b) => (b.noteMoyenne ?? 0) - (a.noteMoyenne ?? 0))[0];
     return [
-      { label: 'Plats au catalogue', valeur: String(actifs.length) },
-      { label: 'Note moyenne', valeur: moyenne === null ? '—' : `★ ${moyenne.toFixed(1)}` },
-      { label: 'Le mieux noté', valeur: meilleur?.nom ?? '—' },
       {
-        label: 'Avec un allergène majeur',
+        label: 'Plats au catalogue',
+        valeur: String(actifs.length),
+        icone: 'pi-book',
+        detail: `${this.plats().length - actifs.length} désactivé(s)`,
+      },
+      {
+        label: 'Note moyenne',
+        valeur: moyenne === null ? '—' : `${moyenne.toFixed(1)} / 5`,
+        icone: 'pi-star-fill',
+        detail: `${notes.length} plats notés`,
+      },
+      {
+        label: 'Plat le mieux noté',
+        valeur: meilleur?.nom ?? '—',
+        icone: 'pi-verified',
+        detail: meilleur ? `${meilleur.noteMoyenne} · ${meilleur.nbAvis} avis` : '',
+      },
+      {
+        label: 'Plats avec allergène majeur',
         valeur: String(actifs.filter((p) => p.allergenes.length).length),
+        icone: 'pi-exclamation-triangle',
+        detail: 'Signalés aux élèves concernés',
       },
     ];
   });
+
+  filtresCategorie = computed(() => [
+    { code: '', libelle: 'Tous', n: this.plats().length },
+    ...this.categories.map((c) => ({
+      code: c.code as string,
+      libelle: c.libelle,
+      n: this.plats().filter((p) => p.categorie === c.code).length,
+    })),
+  ]);
+
+  etoiles(note: number): string {
+    const pleines = Math.round(note);
+    return '★'.repeat(pleines) + '☆'.repeat(5 - pleines);
+  }
 
   ngOnInit(): void {
     this.charger();

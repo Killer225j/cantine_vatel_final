@@ -10,6 +10,7 @@ import {
 } from '../../core/services/cantine-api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { CardComponent } from '../../shared/components/ui/card/card.component';
+import { StatTileComponent } from '../../shared/components/ui/stat-tile/stat-tile.component';
 import { EmptyStateComponent } from '../../shared/components/ui/empty-state/empty-state.component';
 import { SkeletonComponent } from '../../shared/components/ui/skeleton/skeleton.component';
 
@@ -31,7 +32,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
 @Component({
   selector: 'app-anti-gaspi',
   standalone: true,
-  imports: [DatePipe, CardComponent, EmptyStateComponent, SkeletonComponent],
+  imports: [DatePipe, StatTileComponent, CardComponent, EmptyStateComponent, SkeletonComponent],
   template: `
     <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
       <div class="max-w-2xl">
@@ -60,19 +61,9 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
       } @else {
         <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
           @for (t of tuiles(); track t.label) {
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="flex items-start justify-between">
-                <div>
-                  <p class="text-2xl font-bold" [class]="t.classe">{{ t.valeur }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ t.label }}</p>
-                </div>
-                <span
-                  class="w-9 h-9 rounded-lg inline-flex items-center justify-center"
-                  [class]="t.fond"
-                  ><i class="pi {{ t.icone }}" aria-hidden="true"></i
-                ></span>
-              </div>
-              <p class="text-xs text-gray-400 mt-2">{{ t.detail }}</p>
+            <div class="flex flex-col">
+              <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
+              <span class="text-[11px] text-gray-500 mt-1.5 px-1">{{ t.detail }}</span>
             </div>
           }
         </div>
@@ -188,10 +179,12 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
 
           <div class="space-y-4">
             <app-card>
-              <h2 class="font-bold text-gray-800 mb-3">Réglages de l'offre</h2>
-              <p class="text-sm font-semibold text-gray-700 mb-1.5">Réduction</p>
+              <h2 class="font-bold text-gray-800 mb-4">Réglages de l'offre</h2>
+              <p class="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                Réduction
+              </p>
               <div
-                class="inline-flex rounded-lg border border-gray-200 overflow-hidden mb-4"
+                class="flex rounded-lg border border-gray-200 overflow-hidden mb-4"
                 role="group"
                 aria-label="Réduction"
               >
@@ -200,7 +193,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
                     type="button"
                     [disabled]="offreActive()"
                     (click)="reduction.set(v)"
-                    class="px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                    class="flex-1 px-3 py-2 text-sm font-semibold disabled:opacity-50"
                     [class]="
                       reduction() === v
                         ? 'bg-vatel-primary text-white'
@@ -212,28 +205,39 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
                   </button>
                 }
               </div>
-              <p class="text-sm font-semibold text-gray-700 mb-1.5">Durée</p>
-              <div
-                class="inline-flex rounded-lg border border-gray-200 overflow-hidden"
-                role="group"
-                aria-label="Durée"
-              >
-                @for (v of [30, 45, 60]; track v) {
-                  <button
-                    type="button"
-                    [disabled]="offreActive()"
-                    (click)="duree.set(v)"
-                    class="px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                    [class]="
-                      duree() === v
-                        ? 'bg-vatel-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-50'
-                    "
-                    [attr.aria-pressed]="duree() === v"
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    class="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1.5 block"
+                    for="ag-duree"
+                    >Durée</label
                   >
-                    {{ v === 60 ? '1 h' : v + ' min' }}
-                  </button>
-                }
+                  <select
+                    id="ag-duree"
+                    [disabled]="offreActive()"
+                    [value]="duree()"
+                    (change)="duree.set(+$any($event.target).value)"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white disabled:opacity-50"
+                  >
+                    <option value="30">30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">1 heure</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1.5 block"
+                    for="ag-dest"
+                    >Destinataires</label
+                  >
+                  <select
+                    id="ag-dest"
+                    disabled
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600"
+                  >
+                    <option>Présents aujourd'hui</option>
+                  </select>
+                </div>
               </div>
             </app-card>
             <app-card>
@@ -279,7 +283,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
 
     @if (confirmation()) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[3000] bg-black/40 flex items-center justify-center p-4"
         (click)="confirmation.set(false)"
       >
         <div

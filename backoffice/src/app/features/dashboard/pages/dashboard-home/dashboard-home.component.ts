@@ -51,6 +51,7 @@ export class DashboardHomeComponent implements OnInit {
     return [
       {
         label: 'Repas réservés',
+        icone: 'pi-shopping-bag',
         valeur: s ? String(s.reserves) : '—',
         detail: s
           ? `${evolution >= 0 ? '+' : ''}${evolution} par rapport au même jour la semaine dernière`
@@ -58,16 +59,19 @@ export class DashboardHomeComponent implements OnInit {
       },
       {
         label: 'Portions à préparer',
+        icone: 'pi-calculator',
         valeur: s ? String(s.portionsAPreparer) : '—',
         detail: s ? `Absence prévue ${s.tauxAbsence.toLocaleString('fr-FR')} % · marge 5 %` : '',
       },
       {
         label: 'Taux de présence',
+        icone: 'pi-check-circle',
         valeur: s ? `${s.tauxPresence.toLocaleString('fr-FR')} %` : '— %',
         detail: 'Moyenne des 4 dernières semaines',
       },
       {
         label: 'Nourriture sauvée',
+        icone: 'pi-heart',
         valeur: s ? `${s.kgSauvesMois.toLocaleString('fr-FR')} kg` : '— kg',
         detail: s ? `${s.repasSauvesMois} repas sauvés ce mois-ci` : '',
       },
