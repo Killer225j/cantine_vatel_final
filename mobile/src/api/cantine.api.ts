@@ -96,6 +96,48 @@ export interface Commandes {
   reservations: Reservation[];
 }
 
+export type Moyen = 'WAVE' | 'ORANGE_MONEY' | 'MTN_MOMO' | 'MOOV_MONEY';
+
+export interface Enfant {
+  id: string;
+  nom: string;
+  prenom: string | null;
+  classe: string | null;
+  allergenes: Allergene[];
+  solde: number;
+  seuilAlerte: number;
+  soldeBas: boolean;
+  repasDuJour: {
+    plat: string;
+    creneau: string;
+    statut: StatutReservation;
+    servieLe: string | null;
+    allergieVerifiee: boolean;
+  } | null;
+}
+
+export interface Transaction {
+  id: string;
+  type: 'RECHARGE' | 'REPAS' | 'REMBOURSEMENT';
+  montant: number;
+  moyen: Moyen | null;
+  statut: 'EN_ATTENTE' | 'REUSSIE' | 'ECHOUEE';
+  reference: string | null;
+  creeLe: string;
+  libelle: string;
+}
+
+export interface Recharge {
+  id: string;
+  reference: string | null;
+  montant: number;
+  moyen: Moyen | null;
+  moyenLibelle: string | null;
+  statut: 'EN_ATTENTE' | 'REUSSIE' | 'ECHOUEE';
+  beneficiaire: string;
+  urlPaiement?: string;
+}
+
 // ─── Appels ─────────────────────────────────────────────────────────────────
 
 const lire = async <T>(url: string, params?: Record<string, string | undefined>): Promise<T> =>
@@ -118,6 +160,15 @@ export const cantineApi = {
   definirAllergies: async (codes: string[]): Promise<Allergene[]> =>
     (await api.put<{ data: Allergene[] }>('/eleves/me/allergenes', { codes })).data.data,
   codeLiaison: () => lire<{ codeLiaison: string }>('/eleves/me/code-liaison'),
+
+  // Parent
+  enfants: () => lire<Enfant[]>('/parents/me/enfants'),
+  lierEnfant: async (codeLiaison: string): Promise<Enfant> =>
+    (await api.post<{ data: Enfant }>('/parents/me/enfants', { codeLiaison })).data.data,
+  transactionsEnfant: (id: string) => lire<Transaction[]>(`/parents/me/enfants/${id}/transactions`),
+  recharger: async (montant: number, moyen: Moyen, enfantId?: string): Promise<Recharge> =>
+    (await api.post<{ data: Recharge }>('/recharges', { montant, moyen, enfantId })).data.data,
+  recharge: (id: string) => lire<Recharge>(`/recharges/${id}`),
 
   // Cuisine
   commandes: () => lire<Commandes>('/reservations'),
