@@ -59,7 +59,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
           />
         </app-card>
       } @else {
-        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           @for (t of tuiles(); track t.label) {
             <div class="flex flex-col">
               <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
@@ -68,7 +68,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
           }
         </div>
 
-        <div class="grid gap-4 xl:grid-cols-[1fr_340px] mb-5">
+        <div class="grid gap-4 grid-cols-1 lg:grid-cols-[1fr_320px] mb-5">
           <app-card>
             <div class="flex items-start justify-between gap-3 mb-3">
               <div>
