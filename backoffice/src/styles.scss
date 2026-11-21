@@ -1,0 +1,296 @@
+// Custom Theming for Angular Material - CANTINE VATEL
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Theme Cantine Vatel : Bleu Vatel / Blanc / Gris
+$vatel-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+  ),
+  density: (
+    scale: 0,
+  )
+));
+
+:root {
+  @include mat.all-component-themes($vatel-theme);
+  // Surcharge des tokens menu via l'API officielle Angular Material
+  @include mat.menu-overrides((
+    container-color: white,
+    container-shape: 18px,
+    item-hover-state-layer-color: rgba(0, 0, 0, 0.06),
+    item-focus-state-layer-color: rgba(0, 0, 0, 0.06),
+  ));
+}
+
+// Fallback CSS direct (double sécurité)
+.mat-mdc-menu-surface {
+  --mdc-menu-container-color: white;
+  background-color: white !important;
+}
+
+// PrimeIcons
+@import 'primeicons/primeicons.css';
+
+// ===========================
+// VARIABLES COULEURS CANTINE VATEL
+// ===========================
+$vatel-primary: #1b6fa8;
+$vatel-primary-light: #3f93cc;
+$vatel-primary-dark: #12507d;
+$vatel-white: #FFFFFF;
+$vatel-bg: #F5F5F5;
+$vatel-gray: #9E9E9E;
+$vatel-gray-dark: #424242;
+$vatel-black: #212121;
+
+// Couleurs fonctionnelles
+$vatel-success: #2E7D32;
+$vatel-warning: #F57F17;
+$vatel-error: #D32F2F;
+$vatel-info: #1565C0;
+
+// Statuts génériques (brouillon, en cours, validé…)
+$statut-brouillon: #9E9E9E;
+$statut-en-cours: #1565C0;
+$statut-en-attente: #F57F17;
+$statut-valide: #2E7D32;
+$statut-rejete: #D32F2F;
+$statut-cloture: #424242;
+
+// ===========================
+// STYLES GLOBAUX
+// ===========================
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: $vatel-bg;
+  color: $vatel-gray-dark;
+}
+
+// Masque les flèches natives des champs number (évite les changements de
+// valeur accidentels au clic/scroll) sur toute l'application.
+input[type="number"] {
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+// ===========================
+// CLASSES UTILITAIRES
+// ===========================
+
+// Couleurs de texte
+.text-primary { color: $vatel-primary !important; }
+.text-white { color: $vatel-white !important; }
+.text-gray { color: $vatel-gray !important; }
+.text-dark { color: $vatel-gray-dark !important; }
+.text-black { color: $vatel-black !important; }
+.text-success { color: $vatel-success !important; }
+.text-warning { color: $vatel-warning !important; }
+.text-error { color: $vatel-error !important; }
+.text-info { color: $vatel-info !important; }
+
+// Fonds
+.bg-primary { background-color: $vatel-primary !important; }
+.bg-white { background-color: $vatel-white !important; }
+.bg-light { background-color: $vatel-bg !important; }
+.bg-dark { background-color: $vatel-gray-dark !important; }
+
+// Badges statuts
+.statut-brouillon { background-color: $statut-brouillon; color: white; }
+.statut-en-cours { background-color: $statut-en-cours; color: white; }
+.statut-en-attente { background-color: $statut-en-attente; color: white; }
+.statut-valide { background-color: $statut-valide; color: white; }
+.statut-rejete { background-color: $statut-rejete; color: white; }
+.statut-cloture { background-color: $statut-cloture; color: white; }
+
+// Boutons Cantine Vatel
+.btn-vatel-primary {
+  background-color: $vatel-primary !important;
+  color: $vatel-white !important;
+  &:hover { background-color: $vatel-primary-dark !important; }
+}
+
+.btn-vatel-secondary {
+  background-color: $vatel-white !important;
+  color: $vatel-gray-dark !important;
+  border: 1px solid $vatel-gray !important;
+  &:hover { background-color: darken($vatel-white, 5%) !important; }
+}
+
+.btn-vatel-danger {
+  background-color: $vatel-error !important;
+  color: $vatel-white !important;
+  &:hover { background-color: darken($vatel-error, 10%) !important; }
+}
+
+// Cards
+.vatel-card {
+  background-color: $vatel-white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  padding: 16px;
+}
+
+// Espacements
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+
+// Flex
+.d-flex { display: flex; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+.flex-1 { flex: 1; }
+
+// ===========================
+// BOUTON RETOUR GLOBAL
+// ===========================
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: white;
+  color: #9e9e9e;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+
+  i { font-size: 0.8rem; }
+
+  &:hover {
+    color: #1b6fa8;
+    border-color: #1b6fa8;
+    background: #e7f3fc;
+  }
+}
+
+.btn-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 22px;
+  border: 1.5px solid #e0e0e0;
+  background: white;
+  color: #616161;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  i { font-size: 0.8rem; }
+
+  &:hover {
+    color: #1b6fa8;
+    border-color: #1b6fa8;
+  }
+}
+
+// ===========================
+// DESIGN MENU CANTINE VATEL
+// ===========================
+
+.vatel-action-menu {
+  min-width: 190px !important;
+
+  .mat-mdc-menu-surface {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 6px 16px rgba(0, 0, 0, 0.08),
+      0 20px 48px rgba(0, 0, 0, 0.10) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .mat-mdc-menu-content {
+    padding: 5px !important;
+  }
+
+  .mat-mdc-menu-item {
+    border-radius: 8px;
+    margin: 1px 0;
+    min-height: 36px;
+    padding: 0 8px !important;
+    transition: background-color 0.12s ease;
+  }
+
+  .mat-mdc-menu-item-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .mat-divider {
+    margin: 4px 8px !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+  }
+}
+
+// ===========================
+// TOAST NOTIFICATION
+// ===========================
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+
+.toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  animation: toast-in 0.22s ease;
+  pointer-events: none;
+
+  i { font-size: 1.1rem; }
+
+  &--success {
+    background: #12507d;
+    color: white;
+    i { color: #87c1eb; }
+  }
+
+  &--error {
+    background: #b71c1c;
+    color: white;
+    i { color: #ffcdd2; }
+  }
+}

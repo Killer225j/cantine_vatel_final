@@ -1,0 +1,48 @@
+@use '../../../styles/tokens' as t;
+
+.cv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 150ms, color 150ms, border-color 150ms, transform 120ms ease-out;
+
+  &:active:not(:disabled) { transform: scale(0.97); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--primary {
+    background: t.$cv-red;
+    color: #fff;
+    &:hover:not(:disabled) { background: t.$cv-red-dark; }
+  }
+
+  &--outline {
+    background: #fff;
+    color: t.$cv-red;
+    border-color: t.$cv-red;
+    &:hover:not(:disabled) { background: t.$cv-red; color: #fff; }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: t.$cv-ink;
+    &:hover:not(:disabled) { background: rgba(0, 0, 0, .04); }
+  }
+
+  &--danger {
+    background: t.$cv-error;
+    color: #fff;
+    &:hover:not(:disabled) { background: #ab2323; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-btn { transition: none; }
+}

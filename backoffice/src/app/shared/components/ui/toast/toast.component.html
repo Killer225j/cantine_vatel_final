@@ -1,0 +1,6 @@
+@for (t of toastService.toasts(); track t.id) {
+  <div class="toast" [class.toast--success]="t.type === 'success'" [class.toast--error]="t.type === 'error'">
+    <i class="pi" [class.pi-check-circle]="t.type === 'success'" [class.pi-exclamation-circle]="t.type === 'error'"></i>
+    {{ t.message }}
+  </div>
+}

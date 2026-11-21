@@ -1,0 +1,44 @@
+# Blueprint Render : l'API NestJS (dossier backend/) et sa base PostgreSQL, en offre gratuite.
+# Render → New → Blueprint → choisir ce repo. Une seule base gratuite active par workspace,
+# et elle expire 30 jours après sa création.
+services:
+  - type: web
+    name: cantine-vatel-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    # --production=false : les outils de build (nest CLI, TypeScript) sont en devDependencies.
+    buildCommand: yarn install --frozen-lockfile --production=false && yarn prisma generate && yarn build
+    # La commande « pre-deploy » est réservée aux offres payantes : la migration passe ici.
+    startCommand: yarn migrate:deploy && yarn start:prod
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cantine-vatel-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      # À renseigner dans le tableau de bord Render après le premier déploiement Vercel,
+      # par exemple : https://cantine-vatel.vercel.app,http://localhost:4200
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: cantine-vatel-db
+    plan: free
+    region: frankfurt
+    databaseName: cantine_vatel
+    user: cantine

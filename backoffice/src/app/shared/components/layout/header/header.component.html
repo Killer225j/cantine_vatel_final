@@ -1,0 +1,115 @@
+<mat-toolbar class="header-toolbar fixed top-0 left-0 right-0 z-[1000] h-16 flex items-center justify-between px-4">
+
+  <!-- Left: logo -->
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <img src="/logo.svg" alt="" class="h-8 w-8">
+      <div class="flex flex-col leading-tight">
+        <span class="text-sm font-bold tracking-wider text-gray-900">CANTINE VATEL</span>
+        <span class="text-[0.6rem] font-medium tracking-wide text-vatel-primary italic">BACK-OFFICE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center: search -->
+  <div class="flex-1 max-w-md mx-6 hidden md:flex">
+    <div class="flex items-center bg-white rounded-full px-4 py-1.5 w-full
+                border border-gray-300 shadow-sm">
+      <mat-icon class="text-gray-400 mr-2 !text-xl">search</mat-icon>
+      <input type="text" placeholder="Rechercher un plat, un élève, une réservation"
+             class="bg-transparent border-none outline-none text-gray-700 text-sm w-full placeholder:text-gray-400" />
+    </div>
+  </div>
+
+  <!-- Right: user -->
+  <div class="flex items-center gap-3">
+
+    <button mat-button [matMenuTriggerFor]="userMenu"
+            class="!text-gray-800 !normal-case !px-2 !h-auto">
+      <div class="flex items-center gap-2">
+        <div class="hidden lg:flex flex-col text-right leading-snug">
+          <span class="text-sm font-bold text-vatel-primary">{{ currentUser()?.prenom }} {{ currentUser()?.nom }}</span>
+          <span class="text-[0.65rem] text-gray-400 tracking-wide">{{ getRoleLabel() }}</span>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-vatel-primary flex items-center justify-center
+                    font-bold text-sm text-white shadow-sm flex-shrink-0">
+          {{ currentUser()?.initiales }}
+        </div>
+        <mat-icon class="text-gray-400 !text-base">expand_more</mat-icon>
+      </div>
+    </button>
+
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item routerLink="/profile">
+        <mat-icon>person</mat-icon>
+        <span>Mon profil</span>
+      </button>
+      <button mat-menu-item (click)="openModal()">
+        <mat-icon>lock_reset</mat-icon>
+        <span>Changer mot de passe</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        <span>Déconnexion</span>
+      </button>
+    </mat-menu>
+  </div>
+
+</mat-toolbar>
+
+<!-- Modal changement de mot de passe -->
+@if (showModal()) {
+  <div class="pwd-backdrop">
+    <div class="pwd-modal" (click)="$event.stopPropagation()">
+
+      <div class="pwd-modal__header">
+        <span>Changer le mot de passe</span>
+        <button class="pwd-modal__close" (click)="closeModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="pwd-modal__body">
+
+        @if (successMsg()) {
+          <div class="pwd-alert pwd-alert--success">
+            <i class="pi pi-check-circle"></i> {{ successMsg() }}
+          </div>
+        }
+        @if (errorMsg()) {
+          <div class="pwd-alert pwd-alert--error">
+            <i class="pi pi-exclamation-circle"></i> {{ errorMsg() }}
+          </div>
+        }
+
+        <div class="pwd-field">
+          <label class="pwd-field__label">Mot de passe actuel</label>
+          <input class="pwd-field__input" type="password" [(ngModel)]="currentPwd"
+                 placeholder="••••••••" />
+        </div>
+
+        <div class="pwd-field">
+          <label class="pwd-field__label">Nouveau mot de passe</label>
+          <input class="pwd-field__input" type="password" [(ngModel)]="newPwd"
+                 placeholder="••••••••" />
+        </div>
+
+        <div class="pwd-field">
+          <label class="pwd-field__label">Confirmer le nouveau mot de passe</label>
+          <input class="pwd-field__input" type="password" [(ngModel)]="confirmPwd"
+                 placeholder="••••••••" />
+        </div>
+
+      </div>
+
+      <div class="pwd-modal__footer">
+        <button class="pwd-btn pwd-btn--cancel" (click)="closeModal()">Annuler</button>
+        <button class="pwd-btn pwd-btn--save" [disabled]="isSubmitting()" (click)="onChangePassword()">
+          {{ isSubmitting() ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

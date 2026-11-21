@@ -1,0 +1,12 @@
+<button
+  class="cv-btn"
+  [class.cv-btn--primary]="variant() === 'primary'"
+  [class.cv-btn--outline]="variant() === 'outline'"
+  [class.cv-btn--ghost]="variant() === 'ghost'"
+  [class.cv-btn--danger]="variant() === 'danger'"
+  [type]="type()"
+  [disabled]="disabled()"
+  (click)="onClick()"
+>
+  <ng-content />
+</button>

@@ -1,0 +1,85 @@
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Gauche : formulaire -->
+  <div class="flex items-center justify-center px-10 relative z-10 transition-all duration-500 login-left-panel"
+       [ngClass]="showRightPanel() ? 'lg:w-[60%] w-full' : 'w-full'">
+
+    <!-- Bouton toggle circulaire -->
+    <button type="button" (click)="togglePanel()"
+            class="hidden lg:flex items-center justify-center login-toggle-btn"
+            [ngClass]="showRightPanel() ? 'login-toggle-btn--open' : 'login-toggle-btn--closed'"
+            [attr.aria-label]="showRightPanel() ? 'Masquer le panneau' : 'Afficher le panneau'">
+      <mat-icon>{{ showRightPanel() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+
+    <div class="w-full max-w-sm">
+
+      <!-- Logo + titre -->
+      <div class="mb-6 text-center">
+        <img src="/logo.svg" alt="" class="h-20 w-20 mx-auto mb-3">
+        <p class="text-lg font-bold tracking-wider text-gray-900">CANTINE VATEL</p>
+        <h2 class="text-xl font-bold italic text-vatel-primary mt-1">Connexion</h2>
+        <p class="text-sm text-gray-500 mt-1">Espace administration et cuisine</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Email -->
+        <mat-form-field appearance="fill" class="w-full login-field">
+          <mat-label>Adresse e-mail</mat-label>
+          <mat-icon matPrefix class="login-icon">mail</mat-icon>
+          <input matInput type="email" formControlName="email" autocomplete="username" />
+          @if (loginForm.controls['email'].touched && loginForm.controls['email'].invalid) {
+            <mat-error>Saisissez une adresse e-mail valide.</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Mot de passe -->
+        <mat-form-field appearance="fill" class="w-full login-field mt-2">
+          <mat-label>Mot de passe</mat-label>
+          <mat-icon matPrefix class="login-icon">lock</mat-icon>
+          <input matInput formControlName="password"
+                 [type]="hidePassword ? 'password' : 'text'"
+                 autocomplete="current-password" />
+          <mat-icon matSuffix class="login-eye-btn"
+                    (click)="hidePassword = !hidePassword">
+            {{ hidePassword ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </mat-form-field>
+
+        <!-- Se souvenir de moi -->
+        <div class="flex items-center mt-1 mb-4">
+          <mat-checkbox formControlName="seSouvenir" color="primary">Se souvenir de moi</mat-checkbox>
+        </div>
+
+        <!-- Bouton Connexion -->
+        <button type="submit" class="login-submit-btn w-full" [disabled]="isLoading()">
+          @if (isLoading()) {
+            Connexion en cours...
+          } @else {
+            Connexion
+          }
+        </button>
+
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-xs text-gray-400">Élève ou parent ? Utilisez l’appli mobile Cantine Vatel.</p>
+        <p class="text-xs text-gray-400 mt-1">&copy; 2026 Vatel Abidjan</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Droite : panneau de marque -->
+  @if (showRightPanel()) {
+    <div class="hidden lg:flex lg:w-[40%] login-right-panel">
+      <div class="login-right-content">
+        <p class="login-right-kicker">Hackathon Restauration Vatel</p>
+        <p class="login-right-title">Zéro file,<br />zéro gaspi,<br /><span>zéro risque.</span></p>
+        <p class="login-right-sub">Menus, commandes du jour, comptoir et stocks : le poste de pilotage de la cantine.</p>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,28 @@
+@use '../../../styles/tokens' as t;
+
+.cv-card {
+  background: t.$cv-card;
+  border: 1px solid t.$cv-border;
+  border-radius: t.$cv-radius-md;
+  padding: 16px 18px;
+
+  &--pad-sm { padding: 10px 12px; }
+
+  &--hoverable {
+    cursor: pointer;
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, .08);
+      border-color: #F3D3D3;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-card--hoverable {
+    transition: none;
+    &:hover { transform: none; }
+  }
+}

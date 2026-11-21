@@ -1,0 +1,10 @@
+<span
+  class="cv-badge"
+  [class.cv-badge--info]="color() === 'info'"
+  [class.cv-badge--warning]="color() === 'warning'"
+  [class.cv-badge--success]="color() === 'success'"
+  [class.cv-badge--error]="color() === 'error'"
+  [class.cv-badge--neutral]="color() === 'neutral'"
+>
+  <ng-content />
+</span>

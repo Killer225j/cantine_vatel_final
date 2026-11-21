@@ -1,0 +1,325 @@
+.header-toolbar {
+  background-color: white !important;
+  color: #212121 !important;
+  border-bottom: 3px solid #1b6fa8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ─── Modal changement de mot de passe ─────────────────────────────────────── */
+.pwd-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+.pwd-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  animation: slideUp 0.2s ease;
+  overflow: hidden;
+}
+
+.pwd-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #212121;
+}
+
+.pwd-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9e9e9e;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  i { font-size: 0.85rem; }
+  &:hover { color: #1b6fa8; }
+}
+
+.pwd-modal__body {
+  padding: 22px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pwd-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  &--success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  &--error   { background: #e7f3fc; color: #1b6fa8; border: 1px solid #ef9a9a; }
+}
+
+.pwd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pwd-field__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #616161;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pwd-field__input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  color: #212121;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #1b6fa8; }
+}
+
+.pwd-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px 20px;
+}
+
+.pwd-btn {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.15s;
+
+  &--cancel {
+    background: #f5f5f5;
+    color: #616161;
+    &:hover { background: #eeeeee; }
+  }
+
+  &--save {
+    background: #1b6fa8;
+    color: white;
+    &:hover:not(:disabled) { background: #12507d; }
+    &:disabled { background: #87c1eb; cursor: not-allowed; }
+  }
+}
+
+@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes dropIn  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── Cloche notifications ──────────────────────────────────────────────── */
+.notif-wrap {
+  position: relative;
+}
+
+.notif-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #616161;
+  transition: background 0.15s, color 0.15s;
+
+  i { font-size: 1.15rem; }
+
+  &:hover, &--open {
+    background: #e7f3fc;
+    color: #1b6fa8;
+  }
+}
+
+.notif-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: #1b6fa8;
+  color: white;
+  font-size: 0.62rem;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.notif-panel {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  width: 340px;
+  z-index: 9999;
+  overflow: hidden;
+  animation: dropIn 0.15s ease;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px 11px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #212121;
+    i { font-size: 0.85rem; color: #9e9e9e; }
+  }
+
+  &__mark-all {
+    font-size: 0.73rem;
+    color: #1b6fa8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-weight: 500;
+    &:hover { background: #e7f3fc; }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 36px 16px;
+    color: #9e9e9e;
+    font-size: 0.84rem;
+    i { font-size: 1.6rem; color: #bdbdbd; }
+  }
+
+  &__list {
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  &__footer {
+    padding: 10px 16px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+  }
+
+  &__see-all {
+    font-size: 0.8rem;
+    color: #1b6fa8;
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.15s;
+    &:hover { opacity: 0.75; }
+  }
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 1px solid #f5f5f5;
+  position: relative;
+
+  &:last-child { border-bottom: none; }
+  &:hover      { background: #fafafa; }
+  &--unread    { background: #fff8f8; }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #616161;
+    i { font-size: 0.85rem; }
+
+    &--submit { background: #fff3e0; color: #e65100; }
+    &--assign { background: #e8f5e9; color: #2e7d32; }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #212121;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__msg {
+    font-size: 0.77rem;
+    color: #616161;
+    margin: 0 0 4px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__time {
+    font-size: 0.69rem;
+    color: #9e9e9e;
+  }
+
+  &__dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1b6fa8;
+    margin-top: 5px;
+  }
+}

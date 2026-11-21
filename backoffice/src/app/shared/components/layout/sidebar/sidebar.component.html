@@ -1,0 +1,64 @@
+<nav class="sidebar" [class.collapsed]="isCollapsed()">
+
+  <!-- Bouton toggle -->
+  <div class="sidebar-toggle-wrap">
+    <button class="sidebar-toggle" (click)="onToggle()"
+            [title]="isCollapsed() ? 'Ouvrir le menu' : 'Fermer le menu'">
+      <i class="pi" [ngClass]="isCollapsed() ? 'pi-bars' : 'pi-angle-left'"></i>
+    </button>
+  </div>
+
+  <!-- Nav items -->
+  <ul class="nav-list">
+    @for (item of visibleItems(); track item.label) {
+      <li>
+        @if (item.children) {
+          @if (isCollapsed()) {
+            <!-- Replié : un clic va directement au premier sous-item (pas de place pour un sous-menu déplié). -->
+            <a [routerLink]="item.children[0].route"
+               routerLinkActive="active-link"
+               [matTooltip]="item.label"
+               matTooltipPosition="right"
+               class="nav-item">
+              <i class="pi {{ item.icon }} nav-icon"></i>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+          } @else {
+            <button type="button" class="nav-item nav-item--group" (click)="toggleGroup(item)">
+              <i class="pi {{ item.icon }} nav-icon"></i>
+              <span class="nav-label">{{ item.label }}</span>
+              <i class="pi pi-angle-down nav-caret" [class.nav-caret--open]="isExpanded(item)"></i>
+            </button>
+            @if (isExpanded(item)) {
+              <ul class="nav-sublist">
+                @for (child of item.children; track child.route) {
+                  <li>
+                    <a [routerLink]="child.route"
+                      
+                       routerLinkActive="active-link"
+                       [routerLinkActiveOptions]="{ exact: true }"
+                       class="nav-item nav-item--sub">
+                      <i class="pi {{ child.icon }} nav-icon"></i>
+                      <span class="nav-label">{{ child.label }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        } @else {
+          <a [routerLink]="item.route"
+            
+             routerLinkActive="active-link"
+             [matTooltip]="isCollapsed() ? item.label : ''"
+             matTooltipPosition="right"
+             class="nav-item">
+            <i class="pi {{ item.icon }} nav-icon"></i>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        }
+      </li>
+    }
+  </ul>
+
+</nav>

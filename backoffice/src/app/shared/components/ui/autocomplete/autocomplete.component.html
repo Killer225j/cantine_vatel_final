@@ -1,0 +1,43 @@
+<div class="ac">
+  <div class="ac-row" #champ>
+    @if (kind() === 'textarea') {
+      <textarea class="ac-input ac-textarea" rows="2"
+                [ngModel]="value()"
+                (ngModelChange)="onInput($event)"
+                (focus)="onFocus()"
+                (blur)="onBlur()"
+                [placeholder]="placeholder()"
+                autocomplete="off"></textarea>
+    } @else {
+      <input class="ac-input" [class.mono]="kind() === 'digits'" type="text"
+             [attr.inputmode]="kind() === 'digits' ? 'numeric' : null"
+             [attr.maxlength]="maxLength()"
+             [ngModel]="value()"
+             (ngModelChange)="onInput($event)"
+             (focus)="onFocus()"
+             (blur)="onBlur()"
+             [placeholder]="placeholder()"
+             autocomplete="off">
+    }
+    @if (loading()) { <i class="pi pi-spinner pi-spin ac-spinner"></i> }
+    @else if (clearable() && hasSelection()) {
+      <button type="button" class="ac-clear" title="Effacer" (mousedown)="$event.preventDefault(); clear()">
+        <i class="pi pi-times"></i>
+      </button>
+    }
+  </div>
+  @if (dropdownOpen() && suggestions().length > 0) {
+    <div class="ac-dropdown" [class.ac-dropdown--haut]="versLeHaut()" [style]="placementListe()">
+      @for (item of suggestions(); track key(item)) {
+        <div class="ac-option" (mousedown)="$event.preventDefault(); select(item)">
+          <span class="ac-option-label">{{ optionLabel()(item) }}</span>
+          @if (optionHint(); as hint) {
+            @if (hint(item); as h) { <span class="ac-option-hint">{{ h }}</span> }
+          }
+        </div>
+      }
+    </div>
+  } @else if (showEmpty()) {
+    <div class="ac-dropdown ac-empty" [class.ac-dropdown--haut]="versLeHaut()" [style]="placementListe()">{{ emptyMessage() }}</div>
+  }
+</div>

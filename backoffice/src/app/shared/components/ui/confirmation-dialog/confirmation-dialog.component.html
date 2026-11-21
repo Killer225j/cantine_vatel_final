@@ -1,0 +1,41 @@
+@if (visible()) {
+  <div class="modal-overlay" [style.z-index]="niveau()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div class="modal-header-main">
+          <div class="modal-header-icon" [class.modal-header-icon--success]="tone() === 'success'">
+            <i class="pi {{ icone() }}"></i>
+          </div>
+          <div>
+            <h3 class="modal-title">{{ titre() }}</h3>
+            @if (sousTitre()) { <p class="modal-subtitle">{{ sousTitre() }}</p> }
+          </div>
+        </div>
+        <button class="modal-close" (click)="cancelled.emit()"><i class="pi pi-times"></i></button>
+      </div>
+
+      <div class="modal-body-scroll">
+        <p class="modal-confirm-text">{{ message() }}</p>
+        <ng-content />
+        @if (error()) {
+          <p class="modal-error"><i class="pi pi-exclamation-circle"></i> {{ error() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn--cancel" [disabled]="isLoading()" (click)="cancelled.emit()">Annuler</button>
+        <button class="modal-btn" [class.modal-btn--danger]="tone() === 'danger'"
+                [class.modal-btn--success]="tone() === 'success'"
+                [disabled]="isLoading() || confirmDisabled()" (click)="confirmed.emit()">
+          @if (isLoading()) {
+            <i class="pi pi-spinner pi-spin"></i> Traitement…
+          } @else {
+            <i class="pi pi-check"></i> {{ libelleBouton() }}
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

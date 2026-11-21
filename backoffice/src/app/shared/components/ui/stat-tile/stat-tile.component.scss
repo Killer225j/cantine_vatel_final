@@ -1,0 +1,26 @@
+@use '../../../styles/tokens' as t;
+
+.cv-stat {
+  background: t.$cv-card;
+  border: 1px solid t.$cv-border;
+  border-radius: t.$cv-radius-md;
+  padding: 13px 15px;
+
+  &__value {
+    display: block;
+    font-size: 1.3125rem;
+    font-weight: 800;
+    color: t.$cv-ink;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.65625rem;
+    color: t.$cv-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+}

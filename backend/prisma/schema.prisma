@@ -1,0 +1,41 @@
+// Schéma de l'atelier : le squelette ne porte que les comptes.
+// Les modèles de la cantine (plats, menus, créneaux, réservations, portefeuille…)
+// arrivent avec le modèle de données (étape 2).
+
+generator client {
+  provider      = "prisma-client-js"
+  // `native` pour le poste de dev, `debian-openssl-3.0.x` pour Render.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Les quatre profils de la cantine.
+/// ELEVE et PARENT utilisent l'appli mobile ; ADMIN et CUISINE le back-office.
+enum Role {
+  ELEVE
+  PARENT
+  ADMIN
+  CUISINE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  /// Forme canonique +225XXXXXXXXXX, imposée par normalizePhone() à chaque écriture.
+  phone        String?  @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  role         Role
+  isActive     Boolean  @default(true)
+  /// Empreinte SHA-256 du refresh token en cours : un seul appareil connecté à la fois.
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}

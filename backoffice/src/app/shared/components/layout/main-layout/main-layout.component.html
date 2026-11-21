@@ -1,0 +1,18 @@
+<div class="flex flex-col h-screen">
+  <!-- Header fixe -->
+  <app-header />
+
+  <!-- Body sous le header -->
+  <div class="flex flex-1 mt-16 overflow-hidden">
+    <!-- Sidebar -->
+    <app-sidebar [isCollapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
+
+    <!-- Content + Footer -->
+    <div class="flex flex-col flex-1 bg-vatel-bg overflow-hidden">
+      <main class="flex-1 p-6 overflow-y-auto">
+        <router-outlet />
+      </main>
+      <app-footer />
+    </div>
+  </div>
+</div>

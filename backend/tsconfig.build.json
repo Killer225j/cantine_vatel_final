@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "comment": "prisma/ est exclu : le seed tourne par ts-node, jamais depuis dist/ (le point d’entrée reste dist/main.js).",
+  "exclude": ["node_modules", "test", "dist", "prisma", "**/*spec.ts"]
+}

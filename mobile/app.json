@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Cantine Vatel",
+    "slug": "cantine-vatel",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "cantinevatel",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ci.vatel.cantine"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#155e93"
+      },
+      "package": "ci.vatel.cantine",
+      "predictiveBackGestureEnabled": false,
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#f2f8fd"
+        }
+      ],
+      "expo-status-bar"
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "399c5815-4183-48fe-a70a-d966a50556dd"
+      }
+    },
+    "owner": "killer_05"
+  }
+}

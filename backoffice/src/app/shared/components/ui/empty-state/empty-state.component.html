@@ -1,0 +1,10 @@
+<div class="cv-empty">
+  <i class="pi {{ icon() }} cv-empty__icon"></i>
+  <p class="cv-empty__title">{{ title() }}</p>
+  @if (message()) {
+    <p class="cv-empty__message">{{ message() }}</p>
+  }
+  @if (actionLabel()) {
+    <button class="cv-empty__action" (click)="action.emit()">{{ actionLabel() }}</button>
+  }
+</div>

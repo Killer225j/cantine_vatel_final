@@ -1,0 +1,32 @@
+@use '../../../styles/tokens' as t;
+
+.cv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 20px;
+
+  &__icon { font-size: 1.75rem; color: t.$cv-muted; margin-bottom: 10px; }
+  &__title { font-size: 0.875rem; font-weight: 700; color: t.$cv-ink; margin-bottom: 4px; }
+  &__message { font-size: 0.75rem; color: t.$cv-muted; margin-bottom: 14px; max-width: 280px; }
+
+  &__action {
+    background: #fff;
+    color: t.$cv-red;
+    border: 1.5px solid t.$cv-red;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms, color 150ms, transform 120ms ease-out;
+
+    &:hover { background: t.$cv-red; color: #fff; }
+    &:active { transform: scale(0.97); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-empty__action { transition: none; }
+}

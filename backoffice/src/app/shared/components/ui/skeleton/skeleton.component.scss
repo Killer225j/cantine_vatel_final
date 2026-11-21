@@ -1,0 +1,14 @@
+.cv-skeleton {
+  background: linear-gradient(90deg, #EDEFF2 25%, #F5F6F8 37%, #EDEFF2 63%);
+  background-size: 400% 100%;
+  animation: cv-skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes cv-skeleton-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-skeleton { animation: none; background: #EDEFF2; }
+}

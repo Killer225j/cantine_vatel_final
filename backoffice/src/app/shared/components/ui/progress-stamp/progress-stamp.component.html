@@ -1,0 +1,18 @@
+<div class="cv-stamp">
+  @for (step of steps(); track step.label; let last = $last) {
+    <div class="cv-stamp__node">
+      <div
+        class="cv-stamp__dot"
+        [class.cv-stamp__dot--done]="step.state === 'done'"
+        [class.cv-stamp__dot--current]="step.state === 'current'"
+      ></div>
+      <span
+        class="cv-stamp__label"
+        [class.cv-stamp__label--current]="step.state === 'current'"
+      >{{ step.label }}</span>
+    </div>
+    @if (!last) {
+      <div class="cv-stamp__line" [class.cv-stamp__line--done]="step.state === 'done'"></div>
+    }
+  }
+</div>

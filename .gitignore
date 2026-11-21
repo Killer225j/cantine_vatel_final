@@ -1,0 +1,24 @@
+# Racine du monorepo. Chaque dossier (backend/, backoffice/, mobile/) a aussi son propre .gitignore.
+
+# Fichiers d'inspiration tirés de l'ancien projet : jamais versionnés, jamais livrés.
+/_reference/
+
+# Dépendances et builds
+node_modules/
+dist/
+
+# Secrets et variables locales (seuls les .env.example sont versionnés)
+.env*
+!.env.example
+
+# IDE / OS
+.idea/
+.DS_Store
+Thumbs.db
+
+# Base de dev PGlite locale
+.pglite/
+
+
+# Documents internes (récap, analyse, guides) : restent sur le poste, jamais sur GitHub
+/docs/

@@ -1,0 +1,23 @@
+# Dépendances
+node_modules/
+
+# Build
+dist/
+*.tsbuildinfo
+coverage/
+
+# Variables d'environnement : seul l'exemple est versionné
+.env*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Le projet utilise yarn
+package-lock.json

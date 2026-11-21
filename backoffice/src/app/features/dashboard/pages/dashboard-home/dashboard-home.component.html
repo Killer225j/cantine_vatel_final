@@ -1,0 +1,83 @@
+<!-- ─── En-tête ─────────────────────────────────────────────── -->
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Tableau de bord</h1>
+  <p class="dash-subtitle">
+    Bienvenue, <strong>{{ userName }}</strong>. Le service du {{ aujourdhui | date: 'EEEE d MMMM' }} en un coup d'œil.
+  </p>
+</div>
+
+<!-- ─── Indicateurs ──────────────────────────────────────────── -->
+<div class="stats-grid mb-6">
+  @for (s of stats; track s.label) {
+    <div class="stat-carte">
+      <app-stat-tile [value]="s.valeur" [label]="s.label" />
+      <span class="stat-sous">{{ s.detail }}</span>
+    </div>
+  }
+</div>
+
+<!-- ─── Rangée centrale ──────────────────────────────────────── -->
+<div class="mid-grid mb-5">
+
+  <!-- Affluence par créneau -->
+  <div class="widget-card">
+    <h3 class="widget-title">Affluence par créneau</h3>
+    <ul class="creneaux">
+      @for (c of creneaux; track c.heure) {
+        <li class="creneau">
+          <span class="creneau-heure">{{ c.heure }}</span>
+          <span class="creneau-jauge" aria-hidden="true"></span>
+          <span class="creneau-places">— / {{ c.capacite }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+
+  <!-- Accès rapides -->
+  <div class="widget-card">
+    <h3 class="widget-title mb-4">Accès rapides</h3>
+    <div class="quick-grid">
+      @for (q of accesRapides; track q.route) {
+        <a class="quick-btn" [routerLink]="q.route" [style.--qa-color]="q.couleur">
+          <span class="quick-icon-wrap" [style.background]="q.fond">
+            <i class="pi {{ q.icone }}" [style.color]="q.couleur"></i>
+          </span>
+          <span class="quick-label" [style.color]="q.couleur">{{ q.label }}</span>
+        </a>
+      }
+    </div>
+    <a class="help-banner" routerLink="/comptoir">
+      <span class="help-icon"><i class="pi pi-qrcode"></i></span>
+      <span>
+        <p class="help-title">Ouvrir le comptoir</p>
+        <p class="help-sub">Scan des réservations et alertes allergie</p>
+      </span>
+    </a>
+  </div>
+
+</div>
+
+<!-- ─── Rangée du bas ────────────────────────────────────────── -->
+<div class="bottom-grid">
+  <div class="widget-card">
+    <app-empty-state
+      icon="pi-exclamation-triangle"
+      title="Alertes allergie"
+      message="Les réservations à risque du jour s'afficheront ici."
+    />
+  </div>
+  <div class="widget-card">
+    <app-empty-state
+      icon="pi-box"
+      title="Stocks bas"
+      message="Les produits sous le seuil d'alerte s'afficheront ici."
+    />
+  </div>
+  <div class="widget-card">
+    <app-empty-state
+      icon="pi-heart"
+      title="Anti-gaspillage"
+      message="Portions restantes et offres de fin de service."
+    />
+  </div>
+</div>
