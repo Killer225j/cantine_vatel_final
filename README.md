@@ -79,7 +79,8 @@ Les trois dossiers sont indépendants (un `package.json` chacun).
 
 ## Règles métier
 
-- **Une réservation par élève et par jour**, un plat et un créneau. Vérifié dans une transaction Serializable : deux élèves qui prennent la dernière place en même temps, l'un reçoit « créneau complet ».
+- **Jusqu'à 3 repas réservés par élève et par jour** (réglable avec la variable `RESERVATIONS_MAX_PAR_JOUR`), chacun avec son plat, son créneau et son QR code. Vérifié dans une transaction Serializable : deux élèves qui prennent la dernière place en même temps, l'un reçoit « créneau complet ».
+- **L'API est gardée éveillée** par un appel de santé toutes les 10 minutes (GitHub Actions) et réveillée à l'ouverture des écrans de connexion.
 - **Débit à la réservation**, remboursé si annulation avant 10 h (heure d'Abidjan, UTC).
 - **Un code ne sert qu'une fois** ; le service d'un plat allergène exige la confirmation du contrôle (côté API, pas seulement côté écran).
 - **Paiement mobile simulé** : la recharge ouvre une page de paiement fictive (Wave, Orange Money, MTN, Moov) ; aucun argent ne circule. Le crédit et le reçu `RC-…` sont réels dans la base.

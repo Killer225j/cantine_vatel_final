@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ListeSkeleton } from '../../components/ui/Skeleton';
 import { Colors } from '../../constants/colors';
-import { cantineApi, Enfant, fcfa, Transaction } from '../../api/cantine.api';
+import { Allergene, cantineApi, Enfant, fcfa, Transaction } from '../../api/cantine.api';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { useAuth } from '../auth/useAuth';
 
@@ -26,6 +26,46 @@ export function EcranEnfants() {
   const [code, setCode] = useState('');
   const [lienEnCours, setLienEnCours] = useState(false);
   const [erreurLien, setErreurLien] = useState('');
+
+  // Réglages d'un enfant : seuil d'alerte de solde bas et allergies, enregistrés à chaque choix.
+  const [reglage, setReglage] = useState<Enfant | null>(null);
+  const [tous, setTous] = useState<Allergene[]>([]);
+  const [messageReglage, setMessageReglage] = useState('');
+  const [seuilLibre, setSeuilLibre] = useState('');
+
+  const ouvrirReglages = async (enfant: Enfant) => {
+    setReglage(enfant);
+    setMessageReglage('');
+    setSeuilLibre('');
+    if (tous.length === 0) cantineApi.allergenes().then(setTous).catch(() => undefined);
+  };
+
+  const changerSeuil = async (valeur: number) => {
+    if (!reglage || !Number.isFinite(valeur) || valeur < 0) return;
+    try {
+      await cantineApi.reglerSeuilEnfant(reglage.id, valeur);
+      setReglage({ ...reglage, seuilAlerte: valeur });
+      setSeuilLibre('');
+      setMessageReglage(`Alerte réglée à ${fcfa(valeur)}.`);
+      charger();
+    } catch (e) {
+      setMessageReglage(getApiErrorMessage(e, 'Réglage impossible.'));
+    }
+  };
+
+  const basculerAllergie = async (a: Allergene) => {
+    if (!reglage) return;
+    const codes = reglage.allergenes.map((x) => x.code);
+    const suivants = codes.includes(a.code) ? codes.filter((c) => c !== a.code) : [...codes, a.code];
+    try {
+      const maj = await cantineApi.definirAllergiesEnfant(reglage.id, suivants);
+      setReglage({ ...reglage, allergenes: maj });
+      setMessageReglage('Allergies enregistrées : les plats concernés seront signalés.');
+      charger();
+    } catch (e) {
+      setMessageReglage(getApiErrorMessage(e, 'Enregistrement impossible.'));
+    }
+  };
 
   const [historique, setHistorique] = useState<{ enfant: Enfant; lignes: Transaction[] | null } | null>(null);
 
@@ -173,6 +213,7 @@ export function EcranEnfants() {
                 />
                 <Button label="Historique" size="sm" variant="outline" style={{ flex: 1 }} onPress={() => ouvrirHistorique(e)} />
               </View>
+              <Button label="Réglages : alerte et allergies" size="sm" variant="ghost" onPress={() => ouvrirReglages(e)} />
             </View>
           ))
         )}
@@ -201,6 +242,68 @@ export function EcranEnfants() {
           style={styles.champ}
         />
         {erreurLien ? <Text style={styles.erreurLien}>{erreurLien}</Text> : null}
+      </BottomSheetModal>
+
+      <BottomSheetModal
+        visible={!!reglage}
+        onClose={() => setReglage(null)}
+        title={reglage ? `Réglages de ${reglage.prenom ?? reglage.nom}` : ''}
+      >
+        {reglage && (
+          <View style={{ gap: 14, paddingBottom: 12 }}>
+            <View>
+              <Text style={styles.sectionReglage}>Alerte de solde bas</Text>
+              <Text style={styles.aide}>Vous êtes prévenu quand le solde passe sous ce montant.</Text>
+              <View style={styles.puces}>
+                {[1000, 2000, 3000, 5000].map((m) => (
+                  <TouchableOpacity
+                    key={m}
+                    onPress={() => changerSeuil(m)}
+                    style={[styles.puce, reglage.seuilAlerte === m && styles.puceActive]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: reglage.seuilAlerte === m }}
+                  >
+                    <Text style={[styles.puceTexte, reglage.seuilAlerte === m && { color: Colors.white }]}>{fcfa(m)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.libreLigne}>
+                <TextInput
+                  value={seuilLibre}
+                  onChangeText={(t) => setSeuilLibre(t.replace(/D/g, ''))}
+                  placeholder={`Autre montant (actuel : ${fcfa(reglage.seuilAlerte)})`}
+                  placeholderTextColor={Colors.textTertiary}
+                  keyboardType="number-pad"
+                  style={[styles.champ, { flex: 1, fontSize: 14, letterSpacing: 0, marginBottom: 0 }]}
+                />
+                <Button label="OK" size="sm" disabled={!seuilLibre} onPress={() => changerSeuil(Number(seuilLibre))} />
+              </View>
+            </View>
+
+            <View>
+              <Text style={styles.sectionReglage}>Allergies de {reglage.prenom ?? reglage.nom}</Text>
+              <Text style={styles.aide}>Les plats concernés sont signalés au menu, et la cuisine est alertée au comptoir.</Text>
+              <View style={styles.puces}>
+                {tous.map((a) => {
+                  const actif = reglage.allergenes.some((x) => x.code === a.code);
+                  return (
+                    <TouchableOpacity
+                      key={a.code}
+                      onPress={() => basculerAllergie(a)}
+                      style={[styles.puce, actif && styles.puceAllergie]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: actif }}
+                    >
+                      <Text style={[styles.puceTexte, actif && { color: Colors.error }]}>{a.nom}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {messageReglage ? <Text style={styles.messageReglage}>{messageReglage}</Text> : null}
+          </View>
+        )}
       </BottomSheetModal>
 
       <BottomSheetModal
@@ -259,6 +362,14 @@ const styles = StyleSheet.create({
   repasInfo: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   repasVide: { fontSize: 13, color: Colors.textSecondary },
   actions: { flexDirection: 'row', gap: 10 },
+  sectionReglage: { fontSize: 15, fontWeight: '800', color: Colors.textPrimary, marginBottom: 2 },
+  puces: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  puce: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white },
+  puceActive: { backgroundColor: Colors.primary, borderColor: Colors.primaryDark },
+  puceAllergie: { backgroundColor: Colors.errorLight, borderColor: Colors.error },
+  puceTexte: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
+  libreLigne: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  messageReglage: { fontSize: 13, fontWeight: '600', color: Colors.success },
   aide: { fontSize: 13, color: Colors.textSecondary, lineHeight: 19, marginBottom: 12 },
   champ: { height: 52, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.border, paddingHorizontal: 14, fontSize: 20, fontWeight: '800', letterSpacing: 2, color: Colors.textPrimary, marginBottom: 8 },
   erreurLien: { color: Colors.error, fontSize: 13, fontWeight: '600', marginBottom: 8 },

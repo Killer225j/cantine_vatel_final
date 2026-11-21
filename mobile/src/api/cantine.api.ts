@@ -215,6 +215,10 @@ export const cantineApi = {
   offres: () => lire<OffreAntiGaspi[]>('/anti-gaspi/offres'),
 
   // Parent
+  reglerSeuilEnfant: async (id: string, seuilAlerte: number) =>
+    (await api.patch(`/parents/me/enfants/${id}/reglages`, { seuilAlerte })).data.data as { solde: number; seuilAlerte: number },
+  definirAllergiesEnfant: async (enfantId: string, codes: string[]) =>
+    (await api.put<{ data: Allergene[] }>('/eleves/me/allergenes', { codes, enfantId })).data.data,
   enfants: () => lire<Enfant[]>('/parents/me/enfants'),
   lierEnfant: async (codeLiaison: string): Promise<Enfant> =>
     (await api.post<{ data: Enfant }>('/parents/me/enfants', { codeLiaison })).data.data,

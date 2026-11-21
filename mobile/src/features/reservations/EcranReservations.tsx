@@ -85,10 +85,11 @@ export function EcranReservations() {
     }
   };
 
-  const prochaine = donnees?.aVenir.find((r) => r.statut === 'CONFIRMEE') ?? null;
+  // Un élève peut avoir plusieurs repas réservés : un QR code pour chacun.
+  const aServir = donnees?.aVenir.filter((r) => r.statut === 'CONFIRMEE') ?? [];
   // Annulation possible jusqu'à 10h (heure d'Abidjan = UTC) le jour du repas.
-  const annulable =
-    !!prochaine && (prochaine.date.slice(0, 10) > aujourdhui() || new Date().getUTCHours() < 10);
+  const estAnnulable = (r: { date: string }) =>
+    r.date.slice(0, 10) > aujourdhui() || new Date().getUTCHours() < 10;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -118,9 +119,13 @@ export function EcranReservations() {
           <ListeSkeleton lignes={2} />
         ) : (
           <>
-            {prochaine ? (
-              <View style={styles.carteQr}>
+            {aServir.length > 0 ? (
+              aServir.map((prochaine, rang) => {
+                const annulable = estAnnulable(prochaine);
+                return (
+              <View key={prochaine.id} style={styles.carteQr}>
                 <View style={styles.qrTete}>
+                  {aServir.length > 1 && <Badge label={`Repas ${rang + 1} sur ${aServir.length}`} tone="neutre" />}
                   <Badge label={prochaine.date.slice(0, 10) === aujourdhui() ? 'Aujourd’hui' : jourLong(prochaine.date)} tone="info" />
                   <Badge label={STATUT[prochaine.statut].libelle} tone={STATUT[prochaine.statut].ton} />
                 </View>
@@ -152,6 +157,8 @@ export function EcranReservations() {
                   {annulable ? 'Annulation gratuite jusqu’à 10h le jour même.' : 'Annulation impossible après 10h : présentez ce QR code au comptoir.'}
                 </Text>
               </View>
+                );
+              })
             ) : (
               <EmptyState
                 icon={<Ionicons name="qr-code-outline" size={28} color={Colors.primary} />}

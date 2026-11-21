@@ -23,6 +23,9 @@ import { ListerReservationsDto, ReserverDto } from './reservations.dto';
 export const HEURE_LIMITE_ANNULATION = 10;
 
 /** Tout ce qu'il faut pour afficher une réservation, côté élève comme côté comptoir. */
+/** Nombre maximal de repas qu'un élève peut réserver pour un même jour. */
+const MAX_RESERVATIONS_PAR_JOUR = Math.max(1, Number(process.env.RESERVATIONS_MAX_PAR_JOUR) || 3);
+
 const DETAIL = {
   menuItem: {
     select: {
@@ -111,19 +114,21 @@ export class ReservationsService {
             );
           }
 
-          const existante = await tx.reservation.findFirst({
+          // Plafond de repas réservés par jour (variable RESERVATIONS_MAX_PAR_JOUR, 3 par défaut).
+          const dejaReserves = await tx.reservation.count({
             where: {
               userId: eleveId,
               date: item.menuJour.date,
               statut: { not: StatutReservation.ANNULEE },
             },
-            select: { id: true },
           });
-          if (existante) {
+          if (dejaReserves >= MAX_RESERVATIONS_PAR_JOUR) {
             throw erreur(
               ConflictException,
               ERROR_REASON.DEJA_RESERVE,
-              'Vous avez déjà un repas réservé ce jour-là.',
+              MAX_RESERVATIONS_PAR_JOUR === 1
+                ? 'Vous avez déjà un repas réservé ce jour-là.'
+                : `Vous avez déjà réservé ${MAX_RESERVATIONS_PAR_JOUR} repas ce jour-là : c'est le maximum.`,
             );
           }
 

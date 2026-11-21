@@ -15,6 +15,8 @@ export default function SplashScreen() {
   const scale = useRef(new Animated.Value(0.85)).current;
 
   useEffect(() => {
+    // L'hébergement gratuit de l'API s'endort : on la réveille dès l'ouverture, pendant l'animation.
+    fetch(`${Config.API_URL}/health`).catch(() => undefined);
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 600, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }),

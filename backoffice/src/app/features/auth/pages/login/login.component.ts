@@ -33,6 +33,11 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
 
+  constructor() {
+    // L'hébergement gratuit de l'API s'endort : on la réveille dès l'ouverture de la page de connexion.
+    fetch(`${environment.apiUrl}/health`).catch(() => undefined);
+  }
+
   hidePassword = true;
   showRightPanel = signal(true);
   isLoading = signal(false);
