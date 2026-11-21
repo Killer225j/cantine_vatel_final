@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
@@ -41,6 +42,33 @@ export class LoginComponent {
     password: ['', Validators.required],
     seSouvenir: [false],
   });
+
+  /** Comptes de démonstration : un clic et on est connecté. */
+  readonly comptesDemo = [
+    { role: 'Admin', nom: 'Yann', email: 'admin@vatel.ci', icone: 'admin_panel_settings' },
+    { role: 'Cuisine', nom: 'Bolou', email: 'cuisine@vatel.ci', icone: 'restaurant' },
+  ];
+  /** Vide tant que l'APK n'est pas publié. */
+  readonly apkUrl = environment.apkUrl;
+  demoEnCours = signal<string | null>(null);
+
+  connecterDemo(email: string): void {
+    if (this.isLoading()) return;
+    this.demoEnCours.set(email);
+    this.isLoading.set(true);
+    this.authService.login(email, 'Cantine2026!', false).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.demoEnCours.set(null);
+        this.router.navigate([this.authService.accueil()]);
+      },
+      error: (err: unknown) => {
+        this.isLoading.set(false);
+        this.demoEnCours.set(null);
+        this.toastService.error(messageErreur(err), 4000);
+      },
+    });
+  }
 
   togglePanel(): void {
     this.showRightPanel.update((v) => !v);
