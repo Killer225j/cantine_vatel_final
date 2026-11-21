@@ -82,6 +82,43 @@ export class ReferentielsController {
     return eleve.allergenes;
   }
 
+  @Get('eleves/me/profil')
+  @Roles(Role.ELEVE)
+  @ApiOperation({
+    summary: 'Mon profil de cantine',
+    description:
+      'Classe, code de liaison, parents liés, solde et allergies : tout l\x27écran Profil en un appel.',
+  })
+  async profil(@CurrentUser() user: JwtPayload) {
+    const eleve = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      select: {
+        firstName: true,
+        lastName: true,
+        classe: true,
+        codeLiaison: true,
+        allergenes: { select: { code: true, nom: true } },
+        portefeuille: { select: { solde: true, seuilAlerte: true } },
+        parents: { select: { parent: { select: { firstName: true, lastName: true } } } },
+      },
+    });
+    if (!eleve) throw new NotFoundException('Profil introuvable.');
+    const solde = eleve.portefeuille?.solde ?? 0;
+    const seuilAlerte = eleve.portefeuille?.seuilAlerte ?? 2000;
+    return {
+      nom: `${eleve.firstName ?? ''} ${eleve.lastName ?? ''}`.trim(),
+      classe: eleve.classe,
+      codeLiaison: eleve.codeLiaison,
+      allergenes: eleve.allergenes,
+      solde,
+      seuilAlerte,
+      soldeBas: solde < seuilAlerte,
+      parents: eleve.parents.map((l) =>
+        `${l.parent.firstName ?? ''} ${l.parent.lastName ?? ''}`.trim(),
+      ),
+    };
+  }
+
   @Get('eleves/me/code-liaison')
   @Roles(Role.ELEVE)
   @ApiOperation({ summary: 'Mon code à donner à mon parent' })
