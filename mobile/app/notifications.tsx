@@ -47,9 +47,18 @@ export default function Notifications() {
     }, [charger]),
   );
 
+  // Affichage immédiat : la liste et le compteur changent sans attendre le serveur.
   const toutLire = async () => {
-    await cantineApi.toutLire().catch(() => undefined);
-    charger();
+    setListe((l) => l && l.map((n) => ({ ...n, lue: true })));
+    setNonLues(0);
+    await cantineApi.toutLire().catch(() => charger());
+  };
+
+  const ouvrir = async (n: Notification) => {
+    if (n.lue) return;
+    setListe((l) => l && l.map((x) => (x.id === n.id ? { ...x, lue: true } : x)));
+    setNonLues((c) => Math.max(0, c - 1));
+    await cantineApi.marquerLue(n.id).catch(() => charger());
   };
 
   return (
@@ -100,7 +109,14 @@ export default function Notifications() {
           />
         ) : (
           liste.map((n) => (
-            <View key={n.id} style={[styles.ligne, !n.lue && styles.ligneNonLue]}>
+            <TouchableOpacity
+              key={n.id}
+              activeOpacity={0.8}
+              onPress={() => ouvrir(n)}
+              style={[styles.ligne, !n.lue && styles.ligneNonLue]}
+              accessibilityRole="button"
+              accessibilityLabel={`${n.titre}${n.lue ? '' : ', non lue'}`}
+            >
               <View style={[styles.icone, !n.lue && { backgroundColor: Colors.primaryLight }]}>
                 <Ionicons name={ICONE[n.type] ?? 'notifications-outline'} size={20} color={Colors.primary} />
               </View>
@@ -112,7 +128,7 @@ export default function Notifications() {
                 <Text style={styles.quand}>{quand(n.creeLe)}</Text>
                 {!n.lue && <View style={styles.point} />}
               </View>
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

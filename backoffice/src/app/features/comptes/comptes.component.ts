@@ -92,7 +92,7 @@ const ROLES = [
               }}</span>
             </button>
           }
-          <div class="relative ml-auto mb-1">
+          <div class="relative w-full sm:w-auto sm:ml-auto mb-1">
             <i
               class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
               aria-hidden="true"
@@ -103,7 +103,7 @@ const ROLES = [
               aria-label="Rechercher un compte"
               [ngModel]="recherche()"
               (ngModelChange)="recherche.set($event)"
-              class="border border-gray-300 rounded-full pl-9 pr-3 py-1.5 text-sm w-52 focus:outline-none focus:border-vatel-primary"
+              class="border border-gray-300 rounded-full pl-9 pr-3 py-1.5 text-sm w-full sm:w-52 focus:outline-none focus:border-vatel-primary"
             />
           </div>
         </div>

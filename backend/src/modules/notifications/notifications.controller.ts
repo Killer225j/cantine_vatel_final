@@ -1,7 +1,8 @@
-import { Controller, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { lirePreferences, ModifierPreferencesDto } from './preferences.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('access-token')
@@ -18,6 +19,31 @@ export class NotificationsController {
       take: 50,
     });
     return { nonLues: items.filter((n) => !n.lue).length, notifications: items };
+  }
+
+  @Get('preferences')
+  @ApiOperation({ summary: 'Mes préférences de notification' })
+  async preferences(@CurrentUser() user: JwtPayload) {
+    const u = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      select: { preferencesNotif: true },
+    });
+    return lirePreferences(u?.preferencesNotif);
+  }
+
+  @Patch('preferences')
+  @ApiOperation({ summary: 'Modifier mes préférences de notification' })
+  async modifierPreferences(@CurrentUser() user: JwtPayload, @Body() dto: ModifierPreferencesDto) {
+    const u = await this.prisma.user.findUnique({
+      where: { id: user.sub },
+      select: { preferencesNotif: true },
+    });
+    const suivantes = { ...lirePreferences(u?.preferencesNotif), ...dto };
+    await this.prisma.user.update({
+      where: { id: user.sub },
+      data: { preferencesNotif: suivantes },
+    });
+    return suivantes;
   }
 
   @Patch(':id/lue')

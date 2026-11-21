@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,6 +40,7 @@ export function EcranMenu() {
   const [semaine, setSemaine] = useState<Semaine | null>(null);
   const [portefeuille, setPortefeuille] = useState<Portefeuille | null>(null);
   const [jour, setJour] = useState<string>(aujourdhui());
+  const choixManuel = useRef(false);
   const [erreur, setErreur] = useState('');
   const [rafraichit, setRafraichit] = useState(false);
   const [choisi, setChoisi] = useState<ItemMenu | null>(null);
@@ -47,14 +48,30 @@ export function EcranMenu() {
 
   const charger = useCallback(async () => {
     try {
-      const [s, p] = await Promise.all([cantineApi.semaine(), cantineApi.portefeuille()]);
+      const [courante, p] = await Promise.all([cantineApi.semaine(), cantineApi.portefeuille()]);
+      const aujour = aujourdhui();
+      const aVenir = (sem: Semaine) => sem.jours.filter((j) => j.publie && j.items.length && j.date >= aujour);
+      let s = courante;
+      // Plus rien à servir cette semaine (week-end) : on affiche directement la semaine suivante.
+      if (!choixManuel.current && aVenir(courante).length === 0) {
+        const lundi = new Date(`${courante.lundi}T12:00:00Z`);
+        lundi.setUTCDate(lundi.getUTCDate() + 7);
+        const suivante = await cantineApi.semaine(lundi.toISOString().slice(0, 10)).catch(() => null);
+        if (suivante && aVenir(suivante).length > 0) s = suivante;
+      }
       setSemaine(s);
       setPortefeuille(p);
       setErreur('');
-      // Le jour affiché : aujourd'hui s'il a un menu, sinon le premier jour publié.
+      // Le jour affiché : le menu d'aujourd'hui ; sinon le prochain jour publié, sinon le dernier.
       setJour((actuel) => {
-        if (s.jours.some((j) => j.date === actuel)) return actuel;
-        return s.jours.find((j) => j.publie)?.date ?? s.jours[0]?.date ?? actuel;
+        if (choixManuel.current && s.jours.some((j) => j.date === actuel)) return actuel;
+        const publies = s.jours.filter((j) => j.publie && j.items.length);
+        return (
+          publies.find((j) => j.date >= aujour)?.date ??
+          publies[publies.length - 1]?.date ??
+          s.jours[0]?.date ??
+          actuel
+        );
       });
     } catch (e) {
       setErreur(getApiErrorMessage(e, 'Impossible de charger le menu.'));
@@ -150,7 +167,10 @@ export function EcranMenu() {
                 return (
                   <TouchableOpacity
                     key={j.date}
-                    onPress={() => setJour(j.date)}
+                    onPress={() => {
+                      choixManuel.current = true;
+                      setJour(j.date);
+                    }}
                     style={[styles.jourPuce, actif && styles.jourPuceActive]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: actif }}

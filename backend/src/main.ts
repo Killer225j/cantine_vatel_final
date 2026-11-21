@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ApiErrorResponseDto, ApiPaginatedResponseDto } from './common/dto/api-response.dto';
@@ -19,6 +20,13 @@ async function bootstrap(): Promise<void> {
   const corsOrigins = configService.get('cors', { infer: true }).origins;
 
   app.setGlobalPrefix('api/v1');
+
+  // Derrière le proxy de Render : sans cela, la limite de débit verrait une seule adresse pour tout le monde.
+  app.set('trust proxy', 1);
+  // En-têtes de sécurité. La CSP est laissée de côté : l'API sert du JSON, Swagger et une page de paiement simulée.
+  app.use(
+    helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }),
+  );
 
   // Le back-office (navigateur) a besoin du CORS. L'appli mobile n'est pas concernée.
   app.enableCors({

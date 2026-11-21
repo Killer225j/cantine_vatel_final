@@ -68,17 +68,12 @@ const styles = StyleSheet.create({
   },
 
   // Variants
-  // Relief : un bord inférieur plus foncé et une ombre donnent l'impression d'un bouton qu'on enfonce.
+  // Relief : un bord inférieur plus foncé donne l'impression d'un bouton qu'on enfonce.
   primary: {
     backgroundColor: Colors.primary,
     borderWidth: 1,
     borderColor: Colors.primaryDark,
     borderBottomWidth: 4,
-    shadowColor: '#0d3a5c',
-    shadowOpacity: 0.28,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
   },
   outline: {
     backgroundColor: 'transparent',

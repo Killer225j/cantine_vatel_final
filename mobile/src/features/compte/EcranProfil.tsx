@@ -61,6 +61,8 @@ export function EcranProfil() {
 
   const charger = useCallback(() => {
     lirePrefs().then(setPrefs);
+    // Les alertes sont enregistrées sur le serveur : elles suivent le compte d'un appareil à l'autre.
+    cantineApi.preferencesNotif().then((n) => setPrefs((p) => ({ ...p, ...n }))).catch(() => undefined);
     if (role === 'ELEVE') {
       Promise.all([cantineApi.profilEleve(), cantineApi.allergenes()])
         .then(([p, a]) => {
@@ -84,6 +86,13 @@ export function EcranProfil() {
     const suivantes = { ...prefs, [cle]: valeur } as Prefs;
     setPrefs(suivantes);
     ecrirePrefs(suivantes);
+    if (cle !== 'moyen') {
+      cantineApi.modifierPreferencesNotif({ [cle]: valeur }).catch(() => {
+        setPrefs(prefs);
+        ecrirePrefs(prefs);
+        setMessage('Impossible d’enregistrer ce réglage : réessayez.');
+      });
+    }
   };
 
   const basculer = async (code: string) => {
@@ -230,7 +239,7 @@ export function EcranProfil() {
               ))}
             </Carte>
 
-            <Carte titre="Notifications" aide="Préférences enregistrées sur cet appareil.">
+            <Carte titre="Notifications" aide="Enregistrées sur votre compte.">
               <Interrupteur titre="Solde bas" sous="Quand le solde passe sous le seuil" valeur={prefs.alerteSoldeBas} onChange={(v) => changerPref('alerteSoldeBas', v)} separateur />
               <Interrupteur titre="Récap quotidien" sous="Ce que mon enfant a mangé" valeur={prefs.recapQuotidien} onChange={(v) => changerPref('recapQuotidien', v)} separateur />
               <Interrupteur titre="Alerte allergie" sous="Si un plat à risque est réservé" valeur={prefs.alerteAllergie} onChange={(v) => changerPref('alerteAllergie', v)} />

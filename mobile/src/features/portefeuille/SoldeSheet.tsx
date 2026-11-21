@@ -30,7 +30,7 @@ interface Props {
 const dateCourte = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-/** « Mon solde » : recharger son propre compte, et revoir son historique. Sans onglet de navigation. */
+/** Recharger son propre compte ou revoir son historique : chaque bouton ouvre sa propre fenêtre. */
 export function SoldeSheet({ visible, onglet: ongletInitial, solde, onClose, onRecharge }: Props) {
   const [onglet, setOnglet] = useState<OngletSolde>(ongletInitial);
   const [montant, setMontant] = useState<number | null>(5000);
@@ -109,26 +109,10 @@ export function SoldeSheet({ visible, onglet: ongletInitial, solde, onClose, onR
   };
 
   return (
-    <BottomSheetModal visible={visible} onClose={fermer} title="Mon solde">
+    <BottomSheetModal visible={visible} onClose={fermer} title={onglet === 'historique' ? 'Historique du solde' : 'Recharger mon solde'}>
       <View style={styles.entete}>
         <Text style={styles.enteteLibelle}>Solde actuel</Text>
         <Text style={styles.enteteMontant}>{solde === null ? '—' : fcfa(solde)}</Text>
-      </View>
-
-      <View style={styles.onglets} accessibilityRole="tablist">
-        {(['recharger', 'historique'] as const).map((o) => (
-          <TouchableOpacity
-            key={o}
-            onPress={() => setOnglet(o)}
-            style={[styles.onglet, onglet === o && styles.ongletActif]}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: onglet === o }}
-          >
-            <Text style={[styles.ongletTexte, onglet === o && { color: Colors.primary }]}>
-              {o === 'recharger' ? 'Recharger' : 'Historique'}
-            </Text>
-          </TouchableOpacity>
-        ))}
       </View>
 
       {onglet === 'recharger' && !recharge && (

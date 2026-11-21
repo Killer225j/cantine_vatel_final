@@ -1,3 +1,4 @@
+import { lirePreferences } from '../notifications/preferences.dto';
 import {
   BadRequestException,
   ConflictException,
@@ -471,6 +472,17 @@ export class ReservationsService {
       tx.lienParent.findMany({ where: { enfantId: eleveId }, select: { parentId: true } }),
     ]);
     const montant = `${solde.toLocaleString('fr-FR')} FCFA`;
+    // Chacun peut désactiver l'alerte « solde bas » dans ses préférences.
+    const veulent = new Set(
+      (
+        await tx.user.findMany({
+          where: { id: { in: [eleveId, ...liens.map((l) => l.parentId)] } },
+          select: { id: true, preferencesNotif: true },
+        })
+      )
+        .filter((u) => lirePreferences(u.preferencesNotif).alerteSoldeBas)
+        .map((u) => u.id),
+    );
     await tx.notification.createMany({
       data: [
         {
@@ -485,7 +497,7 @@ export class ReservationsService {
           titre: `Solde bas : ${montant}`,
           corps: `Il reste ${montant} à ${eleve?.firstName ?? 'votre enfant'}, sous votre seuil de ${seuil} FCFA.`,
         })),
-      ],
+      ].filter((n) => veulent.has(n.userId)),
     });
   }
 

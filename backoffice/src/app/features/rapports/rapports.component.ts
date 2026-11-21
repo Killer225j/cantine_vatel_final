@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CantineApi, Synthese } from '../../core/services/cantine-api.service';
@@ -50,14 +50,16 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
     </div>
 
     <div class="flex flex-wrap items-center gap-2 mb-5">
-      <div class="inline-flex rounded-full bg-gray-100 p-1" role="group" aria-label="Période">
+      <div class="inline-flex rounded-full bg-gray-200 border border-gray-300 p-1" role="group" aria-label="Période">
         @for (p of presets; track p.code) {
           <button
             type="button"
             (click)="choisir(p.code)"
             class="px-4 py-1.5 rounded-full text-sm font-semibold"
             [class]="
-              preset() === p.code ? 'bg-white text-vatel-primary shadow-sm' : 'text-gray-600'
+              preset() === p.code
+                ? 'bg-white text-vatel-primary shadow border border-gray-200'
+                : 'text-gray-600 hover:text-gray-900'
             "
             [attr.aria-pressed]="preset() === p.code"
           >
@@ -143,7 +145,7 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
           <div class="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 class="font-bold text-gray-800">Fréquentation</h2>
-              <p class="text-xs text-gray-500">Repas servis par semaine</p>
+              <p class="text-xs text-gray-500">Repas servis par semaine · échelle ajustée</p>
             </div>
             <button
               type="button"
@@ -321,10 +323,6 @@ export class RapportsComponent implements OnInit {
   donnees = signal<Synthese | null>(null);
   erreur = signal('');
 
-  private max = computed(() =>
-    Math.max(1, ...(this.donnees()?.frequentation ?? []).map((s) => s.repas)),
-  );
-
   ngOnInit(): void {
     this.charger();
   }
@@ -363,8 +361,16 @@ export class RapportsComponent implements OnInit {
     }
   }
 
+  /**
+   * Hauteur d'une barre. L'échelle démarre sous la plus petite valeur : avec un zéro à la base,
+   * des semaines à 591, 592 et 614 repas auraient trois barres presque identiques.
+   */
   hauteur(n: number): number {
-    return Math.round((n / this.max()) * 100);
+    const valeurs = (this.donnees()?.frequentation ?? []).map((s) => s.repas);
+    const max = Math.max(...valeurs, 1);
+    const min = Math.min(...valeurs, max);
+    const base = max > min ? Math.max(0, Math.floor(min - (max - min) * 1.5)) : Math.floor(min * 0.8);
+    return Math.max(12, Math.round(((n - base) / Math.max(max - base, 1)) * 100));
   }
 
   moyen(m: string | null): string {

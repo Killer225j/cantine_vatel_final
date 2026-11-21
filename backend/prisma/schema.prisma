@@ -39,6 +39,8 @@ model User {
   classe       String?
   /// Élève : code à donner à son parent pour qu'il le suive (ex. KOF-4821).
   codeLiaison  String?  @unique
+  /// Préférences de notification : { alerteSoldeBas, recapQuotidien, alerteAllergie } (absent = tout activé).
+  preferencesNotif Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

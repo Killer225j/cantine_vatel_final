@@ -27,6 +27,7 @@ function utilisateur(surcharges: Partial<User> = {}): User {
     refreshToken: null,
     classe: null,
     codeLiaison: null,
+    preferencesNotif: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...surcharges,

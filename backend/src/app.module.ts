@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import configuration, { validationSchema } from './config/configuration';
@@ -37,6 +38,8 @@ import { RapportsModule } from './modules/rapports/rapports.module';
 
     AuthModule,
     HealthModule,
+    // Limite de débit : 300 requêtes par minute et par adresse (30 par minute sur la connexion).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     NavigationModule,
     ReferentielsModule,
     PlatsModule,
@@ -54,6 +57,7 @@ import { RapportsModule } from './modules/rapports/rapports.module';
   ],
   providers: [
     // Toute route exige un JWT, sauf celles marquées @Public().
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     // @Roles(...) restreint une route à certains rôles.
     { provide: APP_GUARD, useClass: RolesGuard },

@@ -1,3 +1,4 @@
+import { Throttle } from '@nestjs/throttler';
 import {
   Body,
   Controller,
@@ -39,6 +40,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(LimiteDebitGuard)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post('register')
   @ApiOperation({
     summary: 'Créer un compte élève ou parent',
@@ -55,6 +57,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(LimiteDebitGuard)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Se connecter (email ou téléphone)' })

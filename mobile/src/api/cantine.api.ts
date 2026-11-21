@@ -199,7 +199,13 @@ export const cantineApi = {
 
   mesTransactions: () => lire<Transaction[]>('/portefeuille/me/transactions'),
   profilEleve: () => lire<ProfilEleve>('/eleves/me/profil'),
+  preferencesNotif: () => lire<PreferencesNotif>('/notifications/preferences'),
+  modifierPreferencesNotif: async (p: Partial<PreferencesNotif>) =>
+    (await api.patch('/notifications/preferences', p)).data.data as PreferencesNotif,
   notifications: () => lire<{ nonLues: number; notifications: Notification[] }>('/notifications/me'),
+  marquerLue: async (id: string): Promise<void> => {
+    await api.patch(`/notifications/${id}/lue`);
+  },
   toutLire: async (): Promise<void> => {
     await api.post('/notifications/me/tout-lire');
   },
@@ -234,3 +240,9 @@ export function raisonErreur(err: unknown): string {
 export const fcfa = (n: number): string => `${n.toLocaleString('fr-FR')} FCFA`.replace(/ /g, ' ');
 export const heure = (h: string): string => h.replace(':', 'h');
 export const aujourdhui = (): string => new Date().toISOString().slice(0, 10);
+
+export interface PreferencesNotif {
+  alerteSoldeBas: boolean;
+  recapQuotidien: boolean;
+  alerteAllergie: boolean;
+}
