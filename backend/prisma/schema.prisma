@@ -1,6 +1,5 @@
-// Schéma de l'atelier : le squelette ne porte que les comptes.
-// Les modèles de la cantine (plats, menus, créneaux, réservations, portefeuille…)
-// arrivent avec le modèle de données (étape 2).
+// Schéma de la Cantine Vatel. Montants en francs CFA entiers ; dates de menu en @db.Date
+// (Render tourne en UTC, comme Abidjan : pas de décalage horaire à gérer).
 
 generator client {
   provider      = "prisma-client-js"
@@ -13,8 +12,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Les quatre profils de la cantine.
-/// ELEVE et PARENT utilisent l'appli mobile ; ADMIN et CUISINE le back-office.
+// ─── Comptes ────────────────────────────────────────────────────────────────
+
+/// ELEVE et PARENT utilisent l'appli mobile ; ADMIN le back-office ;
+/// CUISINE le back-office et l'espace comptoir du mobile.
 enum Role {
   ELEVE
   PARENT
@@ -34,8 +35,279 @@ model User {
   isActive     Boolean  @default(true)
   /// Empreinte SHA-256 du refresh token en cours : un seul appareil connecté à la fois.
   refreshToken String?
+  /// Élève : sa classe (Bachelor 1, MBA 2…).
+  classe       String?
+  /// Élève : code à donner à son parent pour qu'il le suive (ex. KOF-4821).
+  codeLiaison  String?  @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  /// Allergies déclarées : alimentent le signalement au menu et l'alerte au comptoir.
+  allergenes    Allergene[]
+  portefeuille  Portefeuille?
+  enfants       LienParent[]   @relation("Parent")
+  parents       LienParent[]   @relation("Enfant")
+  reservations  Reservation[]  @relation("ReservationEleve")
+  servies       Reservation[]  @relation("ReservationServeur")
+  notes         Note[]
+  notifications Notification[]
+
   @@map("users")
+}
+
+/// Un parent suit un ou plusieurs enfants ; un élève peut avoir deux parents.
+model LienParent {
+  parentId  String
+  enfantId  String
+  parent    User     @relation("Parent", fields: [parentId], references: [id], onDelete: Cascade)
+  enfant    User     @relation("Enfant", fields: [enfantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([parentId, enfantId])
+  @@map("liens_parent")
+}
+
+// ─── Carte ──────────────────────────────────────────────────────────────────
+
+/// Les 14 allergènes réglementaires (l'arachide en fait partie).
+model Allergene {
+  id    String @id @default(cuid())
+  code  String @unique
+  nom   String
+  plats Plat[]
+  users User[]
+
+  @@map("allergenes")
+}
+
+enum CategoriePlat {
+  ENTREE
+  PLAT
+  DESSERT
+  BOISSON
+}
+
+model Plat {
+  id            String        @id @default(cuid())
+  /// Identifiant lisible et stable (seed idempotent, nom de la photo).
+  slug          String        @unique
+  nom           String
+  description   String?
+  categorie     CategoriePlat @default(PLAT)
+  /// En francs CFA, entier.
+  prix          Int
+  /// URL de la photo, servie par le back-office (Vercel) : pas d'upload sur Render.
+  photoUrl      String?
+  vegetarien    Boolean       @default(false)
+  /// Poids moyen d'une portion : sert au compteur « kg sauvés ».
+  poidsPortionG Int           @default(350)
+  actif         Boolean       @default(true)
+  allergenes    Allergene[]
+  services      MenuItem[]
+  notes         Note[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("plats")
+}
+
+/// Le menu d'un jour. Invisible et non réservable tant qu'il n'est pas publié.
+model MenuJour {
+  id       String     @id @default(cuid())
+  date     DateTime   @unique @db.Date
+  publie   Boolean    @default(false)
+  items    MenuItem[]
+  creneaux Creneau[]
+
+  @@map("menus_jour")
+}
+
+model MenuItem {
+  id              String        @id @default(cuid())
+  menuJourId      String
+  platId          String
+  menuJour        MenuJour      @relation(fields: [menuJourId], references: [id], onDelete: Cascade)
+  plat            Plat          @relation(fields: [platId], references: [id])
+  /// Portions que la cuisine prévoit (saisie, ou proposée par la prévision anti-gaspi).
+  portionsPrevues Int           @default(0)
+  /// Fin de service : prix réduit des portions restantes. Null = pas d'offre en cours.
+  prixAntiGaspi   Int?
+  /// Fin de l'offre anti-gaspi.
+  antiGaspiJusqua DateTime?
+  reservations    Reservation[]
+
+  @@unique([menuJourId, platId])
+  @@map("menu_items")
+}
+
+// ─── File d'attente virtuelle ───────────────────────────────────────────────
+
+/// Un créneau de passage (12h15–12h30) avec une capacité.
+model Creneau {
+  id           String        @id @default(cuid())
+  menuJourId   String
+  menuJour     MenuJour      @relation(fields: [menuJourId], references: [id], onDelete: Cascade)
+  heureDebut   String // "12:15"
+  heureFin     String // "12:30"
+  capacite     Int
+  reservations Reservation[]
+
+  @@unique([menuJourId, heureDebut])
+  @@map("creneaux")
+}
+
+enum StatutReservation {
+  CONFIRMEE
+  SERVIE
+  ANNULEE
+  ABSENT
+}
+
+/// Une réservation = un plat + un créneau. Une seule réservation active (non annulée) par
+/// élève et par jour : vérifié dans la transaction de réservation, pas par une contrainte
+/// unique (qui empêcherait de réserver de nouveau après une annulation).
+model Reservation {
+  id               String            @id @default(cuid())
+  /// Code lisible affiché sous le QR (RV-7K2M-4F9Q-XB3T).
+  code             String            @unique
+  userId           String
+  menuItemId       String
+  creneauId        String
+  user             User              @relation("ReservationEleve", fields: [userId], references: [id])
+  menuItem         MenuItem          @relation(fields: [menuItemId], references: [id])
+  creneau          Creneau           @relation(fields: [creneauId], references: [id])
+  /// Copie de la date du menu : filtre « du jour » sans jointure.
+  date             DateTime          @db.Date
+  /// Prix payé, figé au moment de la réservation.
+  prix             Int
+  antiGaspi        Boolean           @default(false)
+  statut           StatutReservation @default(CONFIRMEE)
+  creeLe           DateTime          @default(now())
+  servieLe         DateTime?
+  servieParId      String?
+  servieePar       User?             @relation("ReservationServeur", fields: [servieParId], references: [id])
+  /// Le personnel a confirmé le contrôle allergie avant de servir.
+  controleAllergie Boolean           @default(false)
+  transactions     Transaction[]
+  note             Note?
+
+  @@index([userId, date])
+  @@index([date, statut])
+  @@index([creneauId, statut])
+  @@map("reservations")
+}
+
+// ─── Portefeuille ───────────────────────────────────────────────────────────
+
+model Portefeuille {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Solde en francs CFA. Ne bouge que par une Transaction, dans la même transaction SQL.
+  solde        Int           @default(0)
+  /// En dessous, le parent reçoit une alerte de solde bas.
+  seuilAlerte  Int           @default(2000)
+  transactions Transaction[]
+
+  @@map("portefeuilles")
+}
+
+enum TypeTransaction {
+  RECHARGE
+  REPAS
+  REMBOURSEMENT
+}
+
+enum MoyenPaiement {
+  WAVE
+  ORANGE_MONEY
+  MTN_MOMO
+  MOOV_MONEY
+}
+
+enum StatutTransaction {
+  EN_ATTENTE
+  REUSSIE
+  ECHOUEE
+}
+
+model Transaction {
+  id             String            @id @default(cuid())
+  portefeuilleId String
+  portefeuille   Portefeuille      @relation(fields: [portefeuilleId], references: [id])
+  type           TypeTransaction
+  /// Signé : + recharge / remboursement, − repas.
+  montant        Int
+  moyen          MoyenPaiement?
+  statut         StatutTransaction @default(REUSSIE)
+  /// Code du reçu (RC-…) pour une recharge.
+  reference      String?           @unique
+  /// Qui a payé une recharge (le parent, ou l'élève lui-même).
+  payeurId       String?
+  reservationId  String?
+  reservation    Reservation?      @relation(fields: [reservationId], references: [id])
+  creeLe         DateTime          @default(now())
+
+  @@index([portefeuilleId, creeLe])
+  @@map("transactions")
+}
+
+// ─── Retours et suivi ───────────────────────────────────────────────────────
+
+model Note {
+  id            String      @id @default(cuid())
+  userId        String
+  platId        String
+  /// On ne note que ce qu'on a mangé, une seule fois.
+  reservationId String      @unique
+  user          User        @relation(fields: [userId], references: [id])
+  plat          Plat        @relation(fields: [platId], references: [id])
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  /// 1 à 5, vérifié par le DTO.
+  etoiles       Int
+  commentaire   String?
+  creeLe        DateTime    @default(now())
+
+  @@index([platId])
+  @@map("notes")
+}
+
+model Notification {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SOLDE_BAS, ANTI_GASPI, RESERVATION, REPAS_SERVI…
+  type   String
+  titre  String
+  corps  String
+  lue    Boolean  @default(false)
+  creeLe DateTime @default(now())
+
+  @@index([userId, lue])
+  @@map("notifications")
+}
+
+// ─── Stocks (bonus) ─────────────────────────────────────────────────────────
+
+model ArticleStock {
+  id          String           @id @default(cuid())
+  nom         String           @unique
+  unite       String
+  quantite    Decimal          @db.Decimal(10, 2)
+  seuilAlerte Decimal          @db.Decimal(10, 2)
+  mouvements  MouvementStock[]
+
+  @@map("articles_stock")
+}
+
+model MouvementStock {
+  id        String       @id @default(cuid())
+  articleId String
+  article   ArticleStock @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  /// Signé : + entrée, − sortie.
+  delta     Decimal      @db.Decimal(10, 2)
+  motif     String
+  creeLe    DateTime     @default(now())
+
+  @@map("mouvements_stock")
 }

@@ -7,7 +7,7 @@ describe('LoggingInterceptor', () => {
   let log: jest.SpyInstance;
 
   const context = {
-    switchToHttp: () => ({ getRequest: () => ({ method: 'GET', url: '/api/patients' }) }),
+    switchToHttp: () => ({ getRequest: () => ({ method: 'GET', url: '/api/reservations' }) }),
   } as unknown as ExecutionContext;
 
   beforeEach(() => {
@@ -23,7 +23,9 @@ describe('LoggingInterceptor', () => {
     const next: CallHandler = { handle: () => of('ok') };
 
     await expect(firstValueFrom(interceptor.intercept(context, next))).resolves.toBe('ok');
-    expect(log).toHaveBeenCalledWith(expect.stringMatching(/^\[GET\] \/api\/patients — \d+ms$/));
+    expect(log).toHaveBeenCalledWith(
+      expect.stringMatching(/^\[GET\] \/api\/reservations —\s\d+ms$/),
+    );
   });
 
   it('ne journalise rien quand la route échoue — le filtre d’exception s’en charge', async () => {

@@ -1,0 +1,103 @@
+{
+  "_lisezmoi": "Contenu de démo pour le seed (prisma/seed.ts). Montants en FCFA entiers. Les menus sont donnés par jour de semaine : le seed les place sur la semaine en cours ET la suivante (dates calculées), pour que la démo marche le samedi 21/11 comme du 23 au 25/11. Photos : fichiers attendus dans backoffice/public/plats/<photo> ; URL en base = https://cantine-vatel-backoffice.vercel.app/plats/<photo>. Mot de passe de tous les comptes : Cantine2026!",
+
+  "allergenes": [
+    { "code": "GLUTEN", "nom": "Gluten" },
+    { "code": "CRUSTACES", "nom": "Crustacés" },
+    { "code": "OEUFS", "nom": "Œufs" },
+    { "code": "POISSONS", "nom": "Poisson" },
+    { "code": "ARACHIDES", "nom": "Arachide" },
+    { "code": "SOJA", "nom": "Soja" },
+    { "code": "LAIT", "nom": "Lait" },
+    { "code": "FRUITS_A_COQUE", "nom": "Fruits à coque" },
+    { "code": "CELERI", "nom": "Céleri" },
+    { "code": "MOUTARDE", "nom": "Moutarde" },
+    { "code": "SESAME", "nom": "Sésame" },
+    { "code": "SULFITES", "nom": "Sulfites" },
+    { "code": "LUPIN", "nom": "Lupin" },
+    { "code": "MOLLUSQUES", "nom": "Mollusques" }
+  ],
+
+  "plats": [
+    { "slug": "attieke-poisson-braise", "nom": "Attiéké poisson braisé", "categorie": "PLAT", "prix": 1500, "poidsPortionG": 450, "allergenes": ["POISSONS"], "vegetarien": false, "photo": "attieke-poisson-braise.jpg", "description": "Capitaine braisé au feu de bois, attiéké frais, oignons, tomates, piment servi à part." },
+    { "slug": "riz-sauce-arachide", "nom": "Riz sauce arachide", "categorie": "PLAT", "prix": 1500, "poidsPortionG": 420, "allergenes": ["ARACHIDES"], "vegetarien": false, "photo": "riz-sauce-arachide.jpg", "description": "Poulet mijoté dans une sauce d'arachide, riz blanc." },
+    { "slug": "alloco-poulet", "nom": "Alloco poulet", "categorie": "PLAT", "prix": 1300, "poidsPortionG": 380, "allergenes": [], "vegetarien": false, "photo": "alloco-poulet.jpg", "description": "Banane plantain frite, cuisse de poulet braisée, sauce tomate." },
+    { "slug": "garba", "nom": "Garba", "categorie": "PLAT", "prix": 1000, "poidsPortionG": 400, "allergenes": ["POISSONS"], "vegetarien": false, "photo": "garba.jpg", "description": "Attiéké, thon frit, piment frais et oignons." },
+    { "slug": "foutou-sauce-graine", "nom": "Foutou sauce graine", "categorie": "PLAT", "prix": 1500, "poidsPortionG": 480, "allergenes": ["POISSONS", "CRUSTACES"], "vegetarien": false, "photo": "foutou-sauce-graine.jpg", "description": "Foutou banane, sauce graine au poisson fumé et crevettes séchées." },
+    { "slug": "kedjenou-poulet", "nom": "Kedjenou de poulet", "categorie": "PLAT", "prix": 1600, "poidsPortionG": 450, "allergenes": [], "vegetarien": false, "photo": "kedjenou-poulet.jpg", "description": "Poulet mijoté à l'étouffée, légumes, attiéké ou riz." },
+    { "slug": "attieke-poulet-braise", "nom": "Attiéké poulet braisé", "categorie": "PLAT", "prix": 1800, "poidsPortionG": 480, "allergenes": [], "vegetarien": false, "photo": "attieke-poulet-braise.jpg", "description": "Demi-poulet braisé, attiéké, crudités." },
+    { "slug": "foutou-sauce-arachide", "nom": "Foutou sauce arachide", "categorie": "PLAT", "prix": 1600, "poidsPortionG": 480, "allergenes": ["ARACHIDES"], "vegetarien": false, "photo": "foutou-sauce-arachide.jpg", "description": "Foutou igname, sauce arachide au bœuf." },
+    { "slug": "placali-sauce-gombo", "nom": "Placali sauce gombo", "categorie": "PLAT", "prix": 1400, "poidsPortionG": 450, "allergenes": ["POISSONS"], "vegetarien": false, "photo": "placali-sauce-gombo.jpg", "description": "Placali (pâte de manioc), sauce gombo au poisson fumé." },
+    { "slug": "riz-gras-poulet", "nom": "Riz gras au poulet", "categorie": "PLAT", "prix": 1500, "poidsPortionG": 430, "allergenes": [], "vegetarien": false, "photo": "riz-gras-poulet.jpg", "description": "Riz cuit dans une sauce tomate épicée, morceaux de poulet, légumes." },
+    { "slug": "spaghetti-bolognaise", "nom": "Spaghetti bolognaise", "categorie": "PLAT", "prix": 1200, "poidsPortionG": 400, "allergenes": ["GLUTEN", "CELERI"], "vegetarien": false, "photo": "spaghetti-bolognaise.jpg", "description": "Spaghetti, sauce tomate à la viande hachée." },
+    { "slug": "riz-legumes-saute", "nom": "Riz sauté aux légumes", "categorie": "PLAT", "prix": 1100, "poidsPortionG": 400, "allergenes": ["SOJA"], "vegetarien": true, "photo": "riz-legumes-saute.jpg", "description": "Riz sauté, carottes, haricots verts, chou, sauce soja." },
+    { "slug": "salade-avocat", "nom": "Salade d'avocat", "categorie": "ENTREE", "prix": 500, "poidsPortionG": 150, "allergenes": ["MOUTARDE"], "vegetarien": true, "photo": "salade-avocat.jpg", "description": "Avocat, tomate, oignon, vinaigrette moutarde." },
+    { "slug": "degue", "nom": "Dêguê", "categorie": "DESSERT", "prix": 400, "poidsPortionG": 150, "allergenes": ["LAIT"], "vegetarien": true, "photo": "degue.jpg", "description": "Couscous de mil au lait caillé sucré." },
+    { "slug": "salade-fruits", "nom": "Salade de fruits", "categorie": "DESSERT", "prix": 400, "poidsPortionG": 150, "allergenes": [], "vegetarien": true, "photo": "salade-fruits.jpg", "description": "Ananas, papaye, mangue de saison." },
+    { "slug": "jus-bissap", "nom": "Jus de bissap", "categorie": "BOISSON", "prix": 300, "poidsPortionG": 330, "allergenes": [], "vegetarien": true, "photo": "jus-bissap.jpg", "description": "Infusion d'hibiscus, menthe, sucre de canne." },
+    { "slug": "jus-gingembre", "nom": "Jus de gingembre", "categorie": "BOISSON", "prix": 300, "poidsPortionG": 330, "allergenes": [], "vegetarien": true, "photo": "jus-gingembre.jpg", "description": "Gingembre frais pressé, citron, ananas." },
+    { "slug": "eau-minerale", "nom": "Eau minérale", "categorie": "BOISSON", "prix": 200, "poidsPortionG": 500, "allergenes": [], "vegetarien": true, "photo": "eau-minerale.jpg", "description": "Bouteille de 50 cl." }
+  ],
+
+  "menus": {
+    "_regle": "Chaque jour : ses plats + toutes les boissons et desserts. portionsPrevues = valeur de départ (le tableau de bord recalcule la prévision). Vendredi : publie=false (démo de l'état brouillon).",
+    "lundi":    { "publie": true,  "plats": [["attieke-poisson-braise", 60], ["kedjenou-poulet", 45], ["riz-legumes-saute", 20], ["salade-avocat", 30], ["degue", 40]] },
+    "mardi":    { "publie": true,  "plats": [["riz-sauce-arachide", 63], ["alloco-poulet", 49], ["garba", 44], ["salade-fruits", 40]] },
+    "mercredi": { "publie": true,  "plats": [["foutou-sauce-graine", 55], ["attieke-poulet-braise", 50], ["spaghetti-bolognaise", 35], ["degue", 40]] },
+    "jeudi":    { "publie": true,  "plats": [["placali-sauce-gombo", 40], ["garba", 55], ["alloco-poulet", 50], ["salade-fruits", 40]] },
+    "vendredi": { "publie": false, "plats": [["riz-gras-poulet", 60], ["foutou-sauce-arachide", 45], ["riz-legumes-saute", 25], ["degue", 40]] },
+    "boissonsChaqueJour": ["jus-bissap", "jus-gingembre", "eau-minerale"]
+  },
+
+  "creneaux": [
+    { "heureDebut": "11:45", "heureFin": "12:00", "capacite": 40 },
+    { "heureDebut": "12:00", "heureFin": "12:15", "capacite": 40 },
+    { "heureDebut": "12:15", "heureFin": "12:30", "capacite": 40 },
+    { "heureDebut": "12:30", "heureFin": "12:45", "capacite": 40 },
+    { "heureDebut": "12:45", "heureFin": "13:00", "capacite": 40 }
+  ],
+
+  "comptes": [
+    { "email": "admin@vatel.ci", "role": "ADMIN", "firstName": "Yann", "lastName": "ZAOU", "phone": "+2250700000001" },
+    { "email": "cuisine@vatel.ci", "role": "CUISINE", "firstName": "Bolou", "lastName": "ZAOU", "phone": "+2250700000002" },
+    { "email": "parent@vatel.ci", "role": "PARENT", "firstName": "Aya", "lastName": "Koffi", "phone": "+2250700000003", "enfants": ["eleve@vatel.ci"] },
+    { "email": "eleve@vatel.ci", "role": "ELEVE", "firstName": "Koffi", "lastName": "Koffi", "phone": "+2250700000010", "classe": "Bachelor 1", "allergenes": ["ARACHIDES"], "solde": 3000, "codeLiaison": "KOF-4821" },
+    { "email": "awa.traore@vatel.ci", "role": "ELEVE", "firstName": "Awa", "lastName": "Traoré", "classe": "Bachelor 2", "allergenes": [], "solde": 6500 },
+    { "email": "yao.kouassi@vatel.ci", "role": "ELEVE", "firstName": "Yao", "lastName": "Kouassi", "classe": "Bachelor 2", "allergenes": [], "solde": 4200 },
+    { "email": "christelle.yapi@vatel.ci", "role": "ELEVE", "firstName": "Christelle", "lastName": "Yapi", "classe": "Bachelor 3", "allergenes": ["ARACHIDES"], "solde": 5000 },
+    { "email": "junior.konan@vatel.ci", "role": "ELEVE", "firstName": "Junior", "lastName": "Konan", "classe": "MBA 1", "allergenes": ["POISSONS"], "solde": 2500 },
+    { "email": "fatou.diabate@vatel.ci", "role": "ELEVE", "firstName": "Fatou", "lastName": "Diabaté", "classe": "MBA 1", "allergenes": [], "solde": 8000 },
+    { "email": "ibrahim.coulibaly@vatel.ci", "role": "ELEVE", "firstName": "Ibrahim", "lastName": "Coulibaly", "classe": "Bachelor 1", "allergenes": ["LAIT"], "solde": 1200 },
+    { "email": "aya.nguessan@vatel.ci", "role": "ELEVE", "firstName": "Aya", "lastName": "N'Guessan", "classe": "Bachelor 3", "allergenes": [], "solde": 3500 }
+  ],
+
+  "historique": {
+    "_regle": "Pour que tableau de bord, taux d'absence et kg sauvés ne soient pas vides : générer des réservations SERVIE/ABSENT/ANNULEE sur les 4 semaines passées (taux d'absence ≈ 6 %), quelques offres anti-gaspi passées (≈ 38 kg sauvés dans le mois), des notes 3 à 5 étoiles, et des recharges Wave/Orange Money/MTN (≈ 58/31/11 %).",
+    "tauxAbsenceCible": 0.06,
+    "kgSauvesMoisCible": 38.4
+  },
+
+  "stocks": [
+    { "nom": "Poisson chinchard", "unite": "kg", "quantite": 0, "seuilAlerte": 15 },
+    { "nom": "Attiéké", "unite": "kg", "quantite": 24, "seuilAlerte": 30 },
+    { "nom": "Poulet", "unite": "kg", "quantite": 18, "seuilAlerte": 25 },
+    { "nom": "Tomates", "unite": "kg", "quantite": 6, "seuilAlerte": 12 },
+    { "nom": "Riz parfumé", "unite": "kg", "quantite": 85, "seuilAlerte": 40 },
+    { "nom": "Banane plantain", "unite": "kg", "quantite": 60, "seuilAlerte": 30 },
+    { "nom": "Pâte d'arachide", "unite": "kg", "quantite": 12, "seuilAlerte": 8 },
+    { "nom": "Thon en boîte", "unite": "boîte", "quantite": 48, "seuilAlerte": 30 },
+    { "nom": "Huile végétale", "unite": "L", "quantite": 22, "seuilAlerte": 15 },
+    { "nom": "Huile de palme", "unite": "L", "quantite": 9, "seuilAlerte": 10 },
+    { "nom": "Graine de palme", "unite": "kg", "quantite": 14, "seuilAlerte": 10 },
+    { "nom": "Lait caillé", "unite": "L", "quantite": 16, "seuilAlerte": 12 },
+    { "nom": "Oignons", "unite": "kg", "quantite": 20, "seuilAlerte": 10 },
+    { "nom": "Igname", "unite": "kg", "quantite": 35, "seuilAlerte": 20 }
+  ],
+
+  "photosAttendues": [
+    "attieke-poisson-braise.jpg", "riz-sauce-arachide.jpg", "alloco-poulet.jpg", "garba.jpg", "foutou-sauce-graine.jpg",
+    "kedjenou-poulet.jpg", "attieke-poulet-braise.jpg", "foutou-sauce-arachide.jpg", "placali-sauce-gombo.jpg", "riz-gras-poulet.jpg",
+    "spaghetti-bolognaise.jpg", "riz-legumes-saute.jpg", "salade-avocat.jpg", "degue.jpg", "salade-fruits.jpg",
+    "jus-bissap.jpg", "jus-gingembre.jpg", "eau-minerale.jpg"
+  ]
+}

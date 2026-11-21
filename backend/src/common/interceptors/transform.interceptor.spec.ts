@@ -17,10 +17,10 @@ describe('TransformInterceptor', () => {
   };
 
   it('enveloppe une charge utile simple', async () => {
-    const response = await intercepter({ id: 'patient-1' });
+    const response = await intercepter({ id: 'reservation-1' });
 
     expect(response.success).toBe(true);
-    expect(response.data).toEqual({ id: 'patient-1' });
+    expect(response.data).toEqual({ id: 'reservation-1' });
     expect(response.meta).toBeUndefined();
   });
 

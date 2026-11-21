@@ -25,6 +25,8 @@ function utilisateur(surcharges: Partial<User> = {}): User {
     role: Role.ELEVE,
     isActive: true,
     refreshToken: null,
+    classe: null,
+    codeLiaison: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...surcharges,
