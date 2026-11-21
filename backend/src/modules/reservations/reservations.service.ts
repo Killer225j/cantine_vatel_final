@@ -380,6 +380,47 @@ export class ReservationsService {
     return this.vue(r);
   }
 
+  /** Donne un avis sur un repas servi : une fois, par l'élève qui l'a mangé. */
+  async noter(
+    eleveId: string,
+    id: string,
+    dto: { etoiles: number; etiquettes?: string[]; commentaire?: string },
+  ) {
+    const r = await this.prisma.reservation.findUnique({
+      where: { id },
+      select: {
+        userId: true,
+        statut: true,
+        menuItem: { select: { platId: true } },
+        note: { select: { id: true } },
+      },
+    });
+    if (!r) throw new NotFoundException('Réservation introuvable.');
+    if (r.userId !== eleveId) throw new ForbiddenException('Cette réservation n’est pas la vôtre.');
+    if (r.statut !== StatutReservation.SERVIE) {
+      throw erreur(
+        BadRequestException,
+        ERROR_REASON.PAS_SERVIE,
+        'Vous pourrez donner votre avis une fois le repas servi.',
+      );
+    }
+    if (r.note) {
+      throw erreur(ConflictException, ERROR_REASON.DEJA_NOTE, 'Vous avez déjà noté ce repas.');
+    }
+    const texte = [dto.etiquettes?.join(', '), dto.commentaire?.trim()].filter(Boolean).join(' — ');
+    const note = await this.prisma.note.create({
+      data: {
+        userId: eleveId,
+        platId: r.menuItem.platId,
+        reservationId: id,
+        etoiles: dto.etoiles,
+        commentaire: texte || null,
+      },
+      select: { etoiles: true, commentaire: true },
+    });
+    return note;
+  }
+
   vue(r: ReservationDetail) {
     const plat = r.menuItem.plat;
     const alertesAllergie: AllergeneVue[] = conflitsAllergie(plat.allergenes, r.user.allergenes);

@@ -13,7 +13,13 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { ListerReservationsDto, ReserverDto, ScannerDto, ServirDto } from './reservations.dto';
+import {
+  ListerReservationsDto,
+  NoterDto,
+  ReserverDto,
+  ScannerDto,
+  ServirDto,
+} from './reservations.dto';
 import { ReservationsService } from './reservations.service';
 
 @ApiTags('Réservations')
@@ -45,6 +51,16 @@ export class ReservationsController {
   @ApiOperation({ summary: 'Une de mes réservations' })
   uneDeMoi(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.reservations.uneDeMoi(user.sub, id);
+  }
+
+  @Post(':id/note')
+  @Roles(Role.ELEVE)
+  @ApiOperation({
+    summary: 'Noter un repas servi (1 à 5 étoiles, étiquettes, commentaire)',
+    description: 'Erreurs : 400 PAS_SERVIE ; 409 DEJA_NOTE ; 403 pas votre réservation.',
+  })
+  noter(@CurrentUser() user: JwtPayload, @Param('id') id: string, @Body() dto: NoterDto) {
+    return this.reservations.noter(user.sub, id, dto);
   }
 
   @Delete(':id')

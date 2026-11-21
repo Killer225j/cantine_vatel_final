@@ -1,6 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StatutReservation } from '@prisma/client';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { FORMAT_JOUR } from '../../common/utils/dates.util';
 
 export class ReserverDto {
@@ -59,4 +72,35 @@ export class ServirDto {
   @IsOptional()
   @IsBoolean()
   controleAllergie?: boolean;
+}
+
+export const ETIQUETTES_AVIS = [
+  'Bon goût',
+  'Servi chaud',
+  'Portion généreuse',
+  'Trop salé',
+  'Trop pimenté',
+  'Service rapide',
+  'Décevant',
+] as const;
+
+export class NoterDto {
+  @ApiProperty({ example: 4, description: 'De 1 à 5 étoiles.' })
+  @IsInt()
+  @Min(1, { message: 'La note va de 1 à 5.' })
+  @Max(5, { message: 'La note va de 1 à 5.' })
+  etoiles!: number;
+
+  @ApiPropertyOptional({ example: ['Bon goût', 'Servi chaud'], description: 'Étiquettes rapides.' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(7)
+  @IsString({ each: true })
+  etiquettes?: string[];
+
+  @ApiPropertyOptional({ example: 'Très bon garba, un peu de piment en plus.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  commentaire?: string;
 }
