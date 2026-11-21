@@ -82,12 +82,9 @@ const VIDE: Brouillon = {
       </div>
     </div>
 
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       @for (t of tuiles(); track t.label) {
-        <div class="flex flex-col">
-          <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
-          <span class="text-[11px] text-gray-500 mt-1.5 px-1">{{ t.detail }}</span>
-        </div>
+        <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
       }
     </div>
 
@@ -129,13 +126,21 @@ const VIDE: Brouillon = {
             </button>
           }
         </div>
-        <label class="ml-auto flex items-center gap-1.5 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            [ngModel]="seulementArachide()"
-            (ngModelChange)="seulementArachide.set($event)"
-          />
-          Avec arachide uniquement
+        <label class="ml-auto flex items-center gap-2 text-sm text-gray-700">
+          <i class="pi pi-filter text-gray-400 text-xs" aria-hidden="true"></i>
+          <span class="sr-only">Filtrer par allergène</span>
+          <select
+            [ngModel]="filtreAllergene()"
+            (ngModelChange)="filtreAllergene.set($event)"
+            aria-label="Filtrer par allergène"
+            class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white"
+          >
+            <option value="">Tous les allergènes</option>
+            <option value="__aucun">Sans allergène</option>
+            @for (a of allergenes(); track a.code) {
+              <option [value]="a.code">Contient : {{ a.nom.toLowerCase() }}</option>
+            }
+          </select>
         </label>
       </div>
 
@@ -164,7 +169,7 @@ const VIDE: Brouillon = {
                         <div>
                           <p class="font-semibold text-gray-800">{{ p.nom }}</p>
                           <p class="text-xs text-gray-500">
-                            {{ p.poidsPortionG ? p.poidsPortionG + ' g' : '—'
+                            {{ p.poidsPortionG ? 'Portion ' + p.poidsPortionG + ' g' : '—'
                             }}{{ p.vegetarien ? ' · végétarien' : '' }}
                           </p>
                         </div>
@@ -174,19 +179,30 @@ const VIDE: Brouillon = {
                     <td class="py-2.5 pr-3 text-right font-semibold">{{ p.prix }} FCFA</td>
                     <td class="py-2.5 pr-3">
                       @for (a of p.allergenes; track a.code) {
-                        <app-badge [color]="a.code === 'ARACHIDES' ? 'error' : 'neutral'">{{
-                          a.nom
-                        }}</app-badge>
+                        <span
+                          class="inline-block text-[11px] font-semibold rounded-full px-2 py-0.5 mr-1 border"
+                          [class]="
+                            a.code === 'ARACHIDES'
+                              ? 'bg-red-50 text-error border-red-100'
+                              : 'bg-amber-50 text-warning border-amber-100'
+                          "
+                          >{{ a.nom }}</span
+                        >
                       } @empty {
-                        <span class="text-gray-400">—</span>
+                        <span
+                          class="inline-block text-[11px] rounded-full px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200"
+                          >Aucun</span
+                        >
                       }
                     </td>
                     <td class="py-2.5 pr-3">
                       @if (p.noteMoyenne !== null) {
-                        <span class="text-amber-400 tracking-tight" aria-hidden="true">{{
-                          etoiles(p.noteMoyenne)
-                        }}</span>
-                        <span class="font-semibold ml-1">{{ p.noteMoyenne }}</span>
+                        <span
+                          class="text-amber-400 text-base tracking-tight align-middle"
+                          aria-hidden="true"
+                          >{{ etoiles(p.noteMoyenne) }}</span
+                        >
+                        <span class="font-bold ml-1">{{ dec(p.noteMoyenne) }}</span>
                         <span class="text-xs text-gray-500">({{ p.nbAvis }} avis)</span>
                       } @else {
                         <span class="text-gray-400">—</span>
@@ -385,7 +401,7 @@ export class PlatsComponent implements OnInit {
 
   recherche = signal('');
   filtreCategorie = signal('');
-  seulementArachide = signal(false);
+  filtreAllergene = signal('');
 
   visibles = computed(() => {
     const q = this.recherche().trim().toLowerCase();
@@ -393,7 +409,10 @@ export class PlatsComponent implements OnInit {
       (p) =>
         (!q || p.nom.toLowerCase().includes(q)) &&
         (!this.filtreCategorie() || p.categorie === this.filtreCategorie()) &&
-        (!this.seulementArachide() || p.allergenes.some((a) => a.code === 'ARACHIDES')),
+        (!this.filtreAllergene() ||
+          (this.filtreAllergene() === '__aucun'
+            ? p.allergenes.length === 0
+            : p.allergenes.some((a) => a.code === this.filtreAllergene()))),
     );
   });
 
@@ -413,13 +432,15 @@ export class PlatsComponent implements OnInit {
       },
       {
         label: 'Note moyenne',
-        valeur: moyenne === null ? '—' : `${moyenne.toFixed(1)} / 5`,
+        valeur: moyenne === null ? '—' : `${this.dec(moyenne)} / 5`,
         icone: 'pi-star-fill',
         detail: `${notes.length} plats notés`,
       },
       {
-        label: 'Plat le mieux noté',
-        valeur: meilleur?.nom ?? '—',
+        label: meilleur
+          ? `Plat le mieux noté · ${this.dec(meilleur.noteMoyenne ?? 0)}`
+          : 'Plat le mieux noté',
+        valeur: (meilleur?.nom ?? '—').split(' ')[0],
         icone: 'pi-verified',
         detail: meilleur ? `${meilleur.noteMoyenne} · ${meilleur.nbAvis} avis` : '',
       },
@@ -440,6 +461,11 @@ export class PlatsComponent implements OnInit {
       n: this.plats().filter((p) => p.categorie === c.code).length,
     })),
   ]);
+
+  /** Une décimale à la française : « 4,6 ». */
+  dec(n: number): string {
+    return n.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  }
 
   etoiles(note: number): string {
     const pleines = Math.round(note);
@@ -466,7 +492,7 @@ export class PlatsComponent implements OnInit {
   effacer(): void {
     this.recherche.set('');
     this.filtreCategorie.set('');
-    this.seulementArachide.set(false);
+    this.filtreAllergene.set('');
   }
 
   nouveau(): void {
