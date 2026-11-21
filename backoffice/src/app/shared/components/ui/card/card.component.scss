@@ -37,3 +37,8 @@
     }
   }
 }
+
+// Pour que deux cartes côte à côte aient la même hauteur : <app-card class="h-full">.
+:host(.h-full) .cv-card {
+  height: 100%;
+}

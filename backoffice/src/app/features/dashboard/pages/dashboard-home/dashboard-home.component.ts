@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { forkJoin, interval } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import {
+  ArticleStock,
   CantineApi,
   JourReservations,
   Prevision,
@@ -119,6 +120,9 @@ export class DashboardHomeComponent implements OnInit {
     return this.accesRapides.filter((a) => !!role && a.roles.includes(role));
   });
 
+  /** Articles sous leur seuil d'alerte (ruptures d'abord) ; null tant que le chargement n'a pas abouti. */
+  stocksBas = signal<ArticleStock[] | null>(null);
+
   ngOnInit(): void {
     this.charger();
     interval(30000)
@@ -127,6 +131,15 @@ export class DashboardHomeComponent implements OnInit {
   }
 
   private charger(): void {
+    this.api.stocks().subscribe({
+      next: (st) =>
+        this.stocksBas.set(
+          st.articles
+            .filter((a) => a.statut !== 'OK')
+            .sort((x, y) => x.niveau - y.niveau),
+        ),
+      error: () => this.stocksBas.set([]),
+    });
     this.api
       .reservations7Jours()
       .subscribe({ next: (j) => this.jours7.set(j), error: () => undefined });

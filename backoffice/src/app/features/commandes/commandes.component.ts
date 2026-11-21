@@ -52,14 +52,14 @@ const STATUTS: Record<StatutReservation, { libelle: string; couleur: BadgeColor 
               class="w-2 h-2 rounded-full"
               [class]="direct() ? 'bg-success animate-pulse' : 'bg-gray-400'"
             ></span>
-            {{ direct() ? 'En direct' : 'En pause' }}
+            {{ direct() ? 'En direct · actualisé toutes les 15 s' : 'Actualisation en pause' }}
           </span>
           <button
             type="button"
             class="ml-2 underline text-xs text-gray-500"
             (click)="direct.set(!direct())"
           >
-            {{ direct() ? 'Mettre en pause' : 'Reprendre' }}
+            {{ direct() ? 'Figer la liste' : 'Reprendre l’actualisation' }}
           </button>
         </p>
       </div>

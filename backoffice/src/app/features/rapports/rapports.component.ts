@@ -141,7 +141,7 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
       </div>
 
       <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mt-4">
-        <app-card>
+        <app-card class="h-full">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 class="font-bold text-gray-800">Fréquentation</h2>
@@ -185,7 +185,7 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
           }
         </app-card>
 
-        <app-card>
+        <app-card class="h-full">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 class="font-bold text-gray-800">Recettes et recharges</h2>
@@ -238,7 +238,7 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
           </table>
         </app-card>
 
-        <app-card>
+        <app-card class="h-full">
           <h2 class="font-bold text-gray-800">Gaspillage évité</h2>
           <p class="text-xs text-gray-500 mb-4">Offres de fin de service sur la période</p>
           <div class="grid grid-cols-3 gap-3 text-center">
@@ -257,9 +257,25 @@ const fcfa = (n: number) => n.toLocaleString('fr-FR');
               <p class="text-xs text-gray-600">jours d'offre</p>
             </div>
           </div>
+          <h3 class="text-sm font-bold text-gray-800 mt-5 mb-2">Kg évités par plat</h3>
+          @for (p of d.gaspillageEvite.parPlat; track p.plat) {
+            <div class="flex items-center gap-3 py-1.5 text-sm border-b border-gray-100 last:border-0">
+              <span class="w-40 truncate text-gray-800">{{ p.plat }}</span>
+              <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  class="h-full rounded-full bg-success"
+                  [style.width.%]="largeurKg(p.kg)"
+                ></div>
+              </div>
+              <span class="w-16 text-right font-semibold">{{ p.kg }} kg</span>
+              <span class="w-16 text-right text-xs text-gray-500">{{ p.repas }} repas</span>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-400">Aucune offre de fin de service sur cette période.</p>
+          }
         </app-card>
 
-        <app-card>
+        <app-card class="h-full">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 class="font-bold text-gray-800">Notes des plats</h2>
@@ -371,6 +387,11 @@ export class RapportsComponent implements OnInit {
     const min = Math.min(...valeurs, max);
     const base = max > min ? Math.max(0, Math.floor(min - (max - min) * 1.5)) : Math.floor(min * 0.8);
     return Math.max(12, Math.round(((n - base) / Math.max(max - base, 1)) * 100));
+  }
+
+  largeurKg(kg: number): number {
+    const max = Math.max(...(this.donnees()?.gaspillageEvite.parPlat ?? []).map((p) => p.kg), 0.1);
+    return Math.max(4, Math.round((kg / max) * 100));
   }
 
   moyen(m: string | null): string {

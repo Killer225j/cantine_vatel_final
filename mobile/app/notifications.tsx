@@ -13,6 +13,7 @@ const ICONE: Record<string, keyof typeof Ionicons.glyphMap> = {
   SOLDE_BAS: 'wallet-outline',
   RECHARGE: 'card-outline',
   ANTI_GASPI: 'leaf-outline',
+  DEMANDE_RECHARGE: 'hand-left-outline',
 };
 
 const quand = (iso: string) => {

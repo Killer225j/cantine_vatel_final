@@ -14,6 +14,7 @@ import { ERROR_REASON } from '../../common/errors/error-reason';
 import { toUniqueConflict } from '../../common/errors/unique-conflict';
 import { normalizePhone } from '../../common/utils/phone.util';
 import { AppConfig } from '../../config/configuration';
+import { genererCodeLiaison } from '../../shared/codes/code-liaison';
 import { AuthRepository } from './auth.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
@@ -69,6 +70,13 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         role: dto.role,
+        // Un élève inscrit lui-même a tout de suite son portefeuille et son code de liaison.
+        ...(dto.role === Role.ELEVE
+          ? {
+              codeLiaison: genererCodeLiaison(dto.lastName ?? ''),
+              portefeuille: { create: { solde: 0, seuilAlerte: 2000 } },
+            }
+          : {}),
       });
     } catch (err: unknown) {
       throw toUniqueConflict(err) ?? err;

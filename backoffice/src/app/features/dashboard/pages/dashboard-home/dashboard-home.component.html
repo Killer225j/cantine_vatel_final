@@ -256,3 +256,52 @@
     }
   </div>
 </div>
+
+<!-- ─── Stocks bas ───────────────────────────────────────────── -->
+<div class="widget-card mt-4">
+  <div class="flex items-start justify-between gap-3 mb-3">
+    <div>
+      <h3 class="widget-title mb-0.5">Stocks bas</h3>
+      <p class="text-xs text-gray-500">Articles sous leur seuil d'alerte, à réapprovisionner</p>
+    </div>
+    <a
+      routerLink="/stocks"
+      class="px-3 py-1.5 rounded-lg border border-vatel-primary text-vatel-primary text-xs font-semibold hover:bg-[#e7f3fc]"
+      >Ouvrir les stocks</a
+    >
+  </div>
+  @if (stocksBas(); as liste) {
+    @if (liste.length) {
+      <div class="grid gap-x-6 gap-y-1 md:grid-cols-2">
+        @for (a of liste; track a.id) {
+          <div class="flex items-center gap-3 py-1.5 text-sm border-b border-gray-100">
+            <span class="flex-1 truncate text-gray-800">{{ a.nom }}</span>
+            <div class="w-24 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                class="h-full rounded-full"
+                [class]="a.statut === 'RUPTURE' ? 'bg-error' : 'bg-warning'"
+                [style.width.%]="a.niveau"
+              ></div>
+            </div>
+            <span class="w-24 text-right font-semibold">{{ a.quantite }} {{ a.unite }}</span>
+            <span
+              class="text-[11px] font-semibold rounded-full px-2 py-0.5"
+              [class]="
+                a.statut === 'RUPTURE' ? 'bg-red-50 text-error' : 'bg-amber-50 text-warning'
+              "
+              >{{ a.statut === 'RUPTURE' ? 'Rupture' : 'Bas' }}</span
+            >
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        icon="pi-check-circle"
+        title="Stocks suffisants"
+        message="Aucun article n'est sous son seuil d'alerte."
+      />
+    }
+  } @else {
+    <app-skeleton height="80px" radius="8px" />
+  }
+</div>

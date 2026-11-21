@@ -1,4 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, NotFoundException, Put } from '@nestjs/common';
+import { assurerCompteEleve } from '../../shared/codes/code-liaison';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { ArrayUnique, IsArray, IsOptional, IsString } from 'class-validator';
@@ -90,6 +91,7 @@ export class ReferentielsController {
       'Classe, code de liaison, parents liés, solde et allergies : tout l\x27écran Profil en un appel.',
   })
   async profil(@CurrentUser() user: JwtPayload) {
+    await assurerCompteEleve(this.prisma, user.sub);
     const eleve = await this.prisma.user.findUnique({
       where: { id: user.sub },
       select: {
@@ -123,6 +125,7 @@ export class ReferentielsController {
   @Roles(Role.ELEVE)
   @ApiOperation({ summary: 'Mon code à donner à mon parent' })
   async codeLiaison(@CurrentUser() user: JwtPayload) {
+    await assurerCompteEleve(this.prisma, user.sub);
     const eleve = await this.prisma.user.findUnique({
       where: { id: user.sub },
       select: { codeLiaison: true },

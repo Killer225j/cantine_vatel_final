@@ -1,3 +1,4 @@
+import { formaterCodeReservation } from '../../core/utils/codes.utils';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,7 +50,7 @@ function lireRefus(err: unknown): Refus {
             <input
               name="code"
               [ngModel]="code()"
-              (ngModelChange)="code.set($event)"
+              (ngModelChange)="saisirCode($event)"
               placeholder="RV-XXXX-XXXX-XXXX"
               autocomplete="off"
               autofocus
@@ -229,6 +230,10 @@ export class ComptoirComponent implements OnInit {
 
   readonly h = heure;
   code = signal('');
+
+  saisirCode(saisie: string): void {
+    this.code.set(formaterCodeReservation(saisie, this.code()));
+  }
   enCours = signal(false);
   resultat = signal<Reservation | null>(null);
   refus = signal<Refus | null>(null);

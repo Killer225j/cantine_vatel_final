@@ -30,6 +30,8 @@ export const ERROR_REASON = {
   DEJA_RESERVE: 'DEJA_RESERVE',
   /** Le solde du portefeuille ne couvre pas le prix. */
   SOLDE_INSUFFISANT: 'SOLDE_INSUFFISANT',
+  /** L'élève n'a aucun parent lié à qui envoyer une demande de recharge. */
+  AUCUN_PARENT: 'AUCUN_PARENT',
   /** Annulation demandée après l'heure limite (10h le jour du repas). */
   ANNULATION_TROP_TARD: 'ANNULATION_TROP_TARD',
   /** Aucune réservation ne porte ce code. */

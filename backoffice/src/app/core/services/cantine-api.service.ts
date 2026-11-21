@@ -247,7 +247,12 @@ export interface Synthese {
   periode: { debut: string; fin: string; jours: number };
   repasServis: { total: number; presence: number; evolution: number | null };
   recettes: { total: number; ticketMoyen: number };
-  gaspillageEvite: { kg: number; repas: number; offres: number };
+  gaspillageEvite: {
+    kg: number;
+    repas: number;
+    offres: number;
+    parPlat: { plat: string; kg: number; repas: number }[];
+  };
   satisfaction: { moyenne: number; avis: number };
   frequentation: { debut: string; fin: string; repas: number }[];
   recharges: {

@@ -31,7 +31,11 @@ export class RapportsService {
           statut: true,
           prix: true,
           antiGaspi: true,
-          menuItem: { select: { plat: { select: { categorie: true, poidsPortionG: true } } } },
+          menuItem: {
+            select: {
+              plat: { select: { id: true, nom: true, categorie: true, poidsPortionG: true } },
+            },
+          },
         },
       }),
       this.prisma.reservation.count({
@@ -66,6 +70,18 @@ export class RapportsService {
     const recettes = servies.reduce((s, r) => s + r.prix, 0);
     const offres = servies.filter((r) => r.antiGaspi);
     const gramme = offres.reduce((s, r) => s + (r.menuItem.plat.poidsPortionG ?? 0), 0);
+    // Poids sauvés plat par plat (repas vendus à prix réduit × poids d'une portion).
+    const parPlatEvite = new Map<string, { plat: string; grammes: number; repas: number }>();
+    for (const r of offres) {
+      const l = parPlatEvite.get(r.menuItem.plat.id) ?? {
+        plat: r.menuItem.plat.nom,
+        grammes: 0,
+        repas: 0,
+      };
+      l.grammes += r.menuItem.plat.poidsPortionG ?? 0;
+      l.repas += 1;
+      parPlatEvite.set(r.menuItem.plat.id, l);
+    }
 
     // Fréquentation : repas servis par semaine (lundi → dimanche).
     const parSemaine = new Map<string, number>();
@@ -131,6 +147,10 @@ export class RapportsService {
         kg: un(gramme / 1000),
         repas: offres.length,
         offres: new Set(offres.map((r) => r.date.toISOString().slice(0, 10))).size,
+        parPlat: [...parPlatEvite.values()]
+          .sort((a, b) => b.grammes - a.grammes)
+          .slice(0, 5)
+          .map((l) => ({ plat: l.plat, kg: un(l.grammes / 1000), repas: l.repas })),
       },
       satisfaction: {
         moyenne: un(notesPeriode._avg.etoiles ?? 0),

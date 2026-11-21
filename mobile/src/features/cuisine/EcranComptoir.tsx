@@ -1,3 +1,4 @@
+import { formaterCodeReservation } from '../../utils/codes';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -143,7 +144,7 @@ export function EcranComptoir() {
           <View style={styles.saisie}>
             <TextInput
               value={code}
-              onChangeText={(t) => setCode(t.toUpperCase())}
+              onChangeText={(t) => setCode((avant) => formaterCodeReservation(t, avant))}
               placeholder="RV-XXXX-XXXX-XXXX"
               placeholderTextColor={Colors.textTertiary}
               autoCapitalize="characters"

@@ -26,6 +26,8 @@ interface Props {
   onClose: () => void;
   /** Appelé après une réservation réussie (pour rafraîchir le solde). */
   onReserve: () => void;
+  /** Ouvre la fenêtre de recharge du solde. */
+  onRecharger: () => void;
 }
 
 const TITRES: Record<Etape, string> = {
@@ -36,13 +38,14 @@ const TITRES: Record<Etape, string> = {
 };
 
 /** Détail du plat → créneau → confirmation et paiement → succès. */
-export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: Props) {
+export function ReserverSheet({ item, date, portefeuille, onClose, onReserve, onRecharger }: Props) {
   const [etape, setEtape] = useState<Etape>('detail');
   const [creneaux, setCreneaux] = useState<Creneau[] | null>(null);
   const [creneauId, setCreneauId] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState('');
   const [soldeApres, setSoldeApres] = useState<number | null>(null);
+  const [demande, setDemande] = useState<{ etat: 'repos' | 'envoi' | 'ok' | 'erreur'; message: string }>({ etat: 'repos', message: '' });
 
   // Une nouvelle ouverture repart de zéro.
   useEffect(() => {
@@ -52,6 +55,7 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
       setCreneauId(null);
       setErreur('');
       setSoldeApres(null);
+      setDemande({ etat: 'repos', message: '' });
     }
   }, [item?.id]);
 
@@ -87,6 +91,16 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
       setErreur(getApiErrorMessage(e, 'La réservation a échoué. Réessayez.'));
     } finally {
       setEnvoi(false);
+    }
+  };
+
+  const demanderAUnParent = async () => {
+    setDemande({ etat: 'envoi', message: '' });
+    try {
+      await cantineApi.demanderRecharge();
+      setDemande({ etat: 'ok', message: 'Demande envoyée : votre parent a reçu une notification.' });
+    } catch (e) {
+      setDemande({ etat: 'erreur', message: getApiErrorMessage(e, 'La demande n’a pas pu être envoyée.') });
     }
   };
 
@@ -230,7 +244,36 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
             <Ligne l="Prix du repas" v={`− ${fcfa(prix)}`} />
             <Ligne l="Solde après" v={fcfa(apres)} fort dernier />
           </View>
-          {apres < 0 && <Alerte danger texte="Solde insuffisant : demandez à un parent de recharger votre portefeuille." />}
+          {apres < 0 && (
+            <View style={styles.insuffisant}>
+              <View style={styles.insuffisantLigne}>
+                <Ionicons name="warning" size={18} color={Colors.error} />
+                <Text style={styles.insuffisantTexte}>
+                  Solde insuffisant :{' '}
+                  <Text
+                    style={styles.lien}
+                    onPress={() => {
+                      onClose();
+                      onRecharger();
+                    }}
+                    accessibilityRole="link"
+                  >
+                    rechargez-vous
+                  </Text>{' '}
+                  ou{' '}
+                  <Text style={styles.lien} onPress={demande.etat === 'envoi' ? undefined : demanderAUnParent} accessibilityRole="link">
+                    demandez à un parent de le faire
+                  </Text>
+                  .
+                </Text>
+              </View>
+              {demande.etat !== 'repos' && (
+                <Text style={[styles.insuffisantRetour, demande.etat === 'erreur' && { color: Colors.error }]}>
+                  {demande.etat === 'envoi' ? 'Envoi de la demande…' : demande.message}
+                </Text>
+              )}
+            </View>
+          )}
           {apres >= 0 && portefeuille && apres < portefeuille.seuilAlerte && (
             <Alerte texte={`Votre solde passera sous ${fcfa(portefeuille.seuilAlerte)} : votre parent recevra une alerte.`} attention />
           )}
@@ -302,6 +345,11 @@ const styles = StyleSheet.create({
   pastilleDanger: { backgroundColor: Colors.errorLight, borderWidth: 1, borderColor: Colors.errorBorder },
   pastilleVerte: { backgroundColor: Colors.successLight },
   pastilleTexte: { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
+  insuffisant: { gap: 6, padding: 12, borderRadius: 12, backgroundColor: Colors.errorLight },
+  insuffisantLigne: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+  insuffisantTexte: { flex: 1, fontSize: 13, fontWeight: '600', lineHeight: 19, color: Colors.error },
+  insuffisantRetour: { fontSize: 12, fontWeight: '600', color: Colors.success, paddingLeft: 26 },
+  lien: { textDecorationLine: 'underline', fontWeight: '800' },
   alerte: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', padding: 12, borderRadius: 12 },
   alerteTexte: { flex: 1, fontSize: 13, fontWeight: '600', lineHeight: 18 },
   resume: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },

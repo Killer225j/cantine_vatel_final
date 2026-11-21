@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ComponentRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,6 +41,7 @@ export function EcranMenu() {
   const [portefeuille, setPortefeuille] = useState<Portefeuille | null>(null);
   const [jour, setJour] = useState<string>(aujourdhui());
   const choixManuel = useRef(false);
+  const ruban = useRef<ComponentRef<typeof ScrollView>>(null);
   const [erreur, setErreur] = useState('');
   const [rafraichit, setRafraichit] = useState(false);
   const [choisi, setChoisi] = useState<ItemMenu | null>(null);
@@ -48,28 +49,40 @@ export function EcranMenu() {
 
   const charger = useCallback(async () => {
     try {
-      const [courante, p] = await Promise.all([cantineApi.semaine(), cantineApi.portefeuille()]);
       const aujour = aujourdhui();
-      const aVenir = (sem: Semaine) => sem.jours.filter((j) => j.publie && j.items.length && j.date >= aujour);
-      let s = courante;
-      // Plus rien à servir cette semaine (week-end) : on affiche directement la semaine suivante.
-      if (!choixManuel.current && aVenir(courante).length === 0) {
-        const lundi = new Date(`${courante.lundi}T12:00:00Z`);
-        lundi.setUTCDate(lundi.getUTCDate() + 7);
-        const suivante = await cantineApi.semaine(lundi.toISOString().slice(0, 10)).catch(() => null);
-        if (suivante && aVenir(suivante).length > 0) s = suivante;
-      }
+      // Les 5 jours avant et après aujourd'hui : l'API renvoie une semaine à la fois, on assemble.
+      const decale = (n: number) => {
+        const d = new Date(`${aujour}T12:00:00Z`);
+        d.setUTCDate(d.getUTCDate() + n);
+        return d.toISOString().slice(0, 10);
+      };
+      const lundiDe = (iso: string) => {
+        const d = new Date(`${iso}T12:00:00Z`);
+        d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+        return d.toISOString().slice(0, 10);
+      };
+      const debut = decale(-5);
+      const fin = decale(5);
+      const lundis = [...new Set([lundiDe(debut), lundiDe(aujour), lundiDe(fin)])];
+      const [semaines, p] = await Promise.all([
+        Promise.all(lundis.map((l) => cantineApi.semaine(l))),
+        cantineApi.portefeuille(),
+      ]);
+      const jours = semaines
+        .flatMap((sem) => sem.jours)
+        .filter((j) => j.date >= debut && j.date <= fin)
+        .sort((x, y) => x.date.localeCompare(y.date));
+      const s: Semaine = { ...semaines[0], jours };
       setSemaine(s);
       setPortefeuille(p);
       setErreur('');
-      // Le jour affiché : le menu d'aujourd'hui ; sinon le prochain jour publié, sinon le dernier.
+      // Le jour affiché : aujourd'hui (même sans menu : on le dit), sinon le prochain jour du service.
       setJour((actuel) => {
-        if (choixManuel.current && s.jours.some((j) => j.date === actuel)) return actuel;
-        const publies = s.jours.filter((j) => j.publie && j.items.length);
+        if (choixManuel.current && jours.some((j) => j.date === actuel)) return actuel;
         return (
-          publies.find((j) => j.date >= aujour)?.date ??
-          publies[publies.length - 1]?.date ??
-          s.jours[0]?.date ??
+          jours.find((j) => j.date === aujour)?.date ??
+          jours.find((j) => j.date >= aujour)?.date ??
+          jours[jours.length - 1]?.date ??
           actuel
         );
       });
@@ -101,7 +114,13 @@ export function EcranMenu() {
     (i) => !!i.prixAntiGaspi && !!i.antiGaspiJusqua && new Date(i.antiGaspiJusqua) > new Date(),
   );
   const jusquaOffre = offres.map((i) => i.antiGaspiJusqua as string).sort().pop();
-  const premierPublie = semaine?.jours.find((j) => j.publie && j.items.length);
+  // Le ruban des jours se cale sur le jour affiché (environ 80 px par pastille).
+  useEffect(() => {
+    const i = semaine?.jours.findIndex((j) => j.date === jour) ?? -1;
+    if (i >= 0) setTimeout(() => ruban.current?.scrollTo({ x: Math.max(0, i * 80 - 120), animated: true }), 50);
+  }, [jour, semaine]);
+
+  const jourSuivant = semaine?.jours.find((j) => j.date > jour);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -161,7 +180,7 @@ export function EcranMenu() {
           <ListeSkeleton lignes={4} />
         ) : (
           <>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.jours}>
+            <ScrollView ref={ruban} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.jours}>
               {semaine.jours.map((j) => {
                 const actif = j.date === jour;
                 return (
@@ -200,8 +219,15 @@ export function EcranMenu() {
                 icon={<Ionicons name="time-outline" size={28} color={Colors.primary} />}
                 title="Menu pas encore publié"
                 subtitle="Le menu de ce jour sera visible dès sa publication par la cuisine."
-                buttonLabel={premierPublie ? `Voir le menu du ${jourCourt(premierPublie.date)}` : undefined}
-                onPress={premierPublie ? () => setJour(premierPublie.date) : undefined}
+                buttonLabel={jourSuivant ? `Voir le ${jourCourt(jourSuivant.date)}` : undefined}
+                onPress={
+                  jourSuivant
+                    ? () => {
+                        choixManuel.current = true;
+                        setJour(jourSuivant.date);
+                      }
+                    : undefined
+                }
               />
             ) : (
               groupes.map((g) => (
@@ -231,6 +257,7 @@ export function EcranMenu() {
         portefeuille={portefeuille}
         onClose={() => setChoisi(null)}
         onReserve={charger}
+        onRecharger={() => setSolde({ ouvert: true, onglet: 'recharger' })}
       />
     </SafeAreaView>
   );

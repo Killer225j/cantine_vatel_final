@@ -203,6 +203,8 @@ export const cantineApi = {
   modifierPreferencesNotif: async (p: Partial<PreferencesNotif>) =>
     (await api.patch('/notifications/preferences', p)).data.data as PreferencesNotif,
   notifications: () => lire<{ nonLues: number; notifications: Notification[] }>('/notifications/me'),
+  demanderRecharge: async () =>
+    (await api.post('/portefeuille/me/demande-recharge')).data.data as { parentsPrevenus: number; nouvelles: number },
   marquerLue: async (id: string): Promise<void> => {
     await api.patch(`/notifications/${id}/lue`);
   },
