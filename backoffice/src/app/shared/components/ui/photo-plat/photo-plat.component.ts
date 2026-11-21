@@ -7,7 +7,9 @@ import { Component, computed, input, signal } from '@angular/core';
   template: `
     @if (url() && !echec()) {
       <img
-        [src]="url()"
+        [src]="source()"
+        loading="lazy"
+        decoding="async"
         [alt]="nom()"
         (error)="echec.set(true)"
         class="object-cover rounded-lg shrink-0"
@@ -30,6 +32,11 @@ export class PhotoPlatComponent {
   nom = input.required<string>();
   taille = input(40);
   echec = signal(false);
+  /** Petites vignettes : miniature de 240 px (≈ 14 Ko) au lieu de la photo d'origine (≈ 100 Ko). */
+  source = computed(() => {
+    const u = this.url();
+    return u && this.taille() <= 100 ? u.replace('/plats/', '/plats/min/') : u;
+  });
   initiales = computed(() =>
     this.nom()
       .split(/\s+/)

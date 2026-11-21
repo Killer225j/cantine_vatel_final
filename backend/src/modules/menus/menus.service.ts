@@ -97,6 +97,46 @@ export class MenusService {
     };
   }
 
+  /** Les jours autour d'aujourd'hui : une seule lecture, là où il fallait une requête par semaine. */
+  async autour(user: JwtPayload, avant: number, apres: number, enfantId?: string) {
+    const today = aujourdhui();
+    const debut = ajouterJours(today, -avant);
+    const dates = Array.from({ length: avant + apres + 1 }, (_, i) => ajouterJours(debut, i));
+    const visiteur = estVisiteur(user);
+
+    const [menus, allergies] = await Promise.all([
+      this.prisma.menuJour.findMany({
+        where: {
+          date: { gte: versDate(dates[0]), lte: versDate(dates[dates.length - 1]) },
+          ...(visiteur ? { publie: true } : {}),
+        },
+        include: INCLUSION_MENU,
+      }),
+      this.allergiesDe(user, enfantId),
+    ]);
+    const notes = await this.plats.notesMoyennes(
+      menus.flatMap((m) => m.items.map((i) => i.platId)),
+    );
+    const parJour = new Map(menus.map((m) => [versJour(m.date), m]));
+    const jours = dates.filter((jour) => {
+      const joursem = versDate(jour).getUTCDay(); // 0 dimanche … 6 samedi
+      return parJour.has(jour) || (joursem >= 1 && joursem <= 5);
+    });
+    return {
+      aujourdhui: today,
+      allergies,
+      jours: jours.map((jour) => {
+        const menu = parJour.get(jour);
+        return {
+          date: jour,
+          publie: menu?.publie ?? false,
+          menuId: menu?.id ?? null,
+          items: (menu?.items ?? []).map((i) => vueItem(i, allergies, notes)),
+        };
+      }),
+    };
+  }
+
   /** Le menu d'un jour : plats (avec contrôle des allergies) et créneaux avec places restantes. */
   async jour(user: JwtPayload, jour: string, enfantId?: string) {
     const [menu, allergies] = await Promise.all([

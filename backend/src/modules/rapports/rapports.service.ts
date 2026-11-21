@@ -24,19 +24,12 @@ export class RapportsService {
 
     const periode = { gte: versDate(jourDebut), lte: versDate(jourFin) };
     const [reservations, precServies, notesPeriode, recharges, parPlat] = await Promise.all([
-      this.prisma.reservation.findMany({
+      // Agrégé par la base : quelques centaines de lignes au lieu de toutes les réservations.
+      this.prisma.reservation.groupBy({
+        by: ['date', 'statut', 'antiGaspi', 'menuItemId'],
         where: { date: periode, statut: { not: StatutReservation.ANNULEE } },
-        select: {
-          date: true,
-          statut: true,
-          prix: true,
-          antiGaspi: true,
-          menuItem: {
-            select: {
-              plat: { select: { id: true, nom: true, categorie: true, poidsPortionG: true } },
-            },
-          },
-        },
+        _count: { _all: true },
+        _sum: { prix: true },
       }),
       this.prisma.reservation.count({
         where: {
@@ -65,29 +58,45 @@ export class RapportsService {
       }),
     ]);
 
+    const platsDesItems = await this.prisma.menuItem.findMany({
+      where: { id: { in: [...new Set(reservations.map((r) => r.menuItemId))] } },
+      select: {
+        id: true,
+        plat: { select: { id: true, nom: true, categorie: true, poidsPortionG: true } },
+      },
+    });
+    const platDe = new Map(platsDesItems.map((i) => [i.id, i.plat]));
+    const jourDe = (d: Date) => d.toISOString().slice(0, 10);
+
     const servies = reservations.filter((r) => r.statut === StatutReservation.SERVIE);
-    const absents = reservations.filter((r) => r.statut === StatutReservation.ABSENT).length;
-    const recettes = servies.reduce((s, r) => s + r.prix, 0);
+    const nb = (lignes: typeof reservations) => lignes.reduce((t, r) => t + r._count._all, 0);
+    const montant = (lignes: typeof reservations) =>
+      lignes.reduce((t, r) => t + (r._sum.prix ?? 0), 0);
+    const nbServies = nb(servies);
+    const absents = nb(reservations.filter((r) => r.statut === StatutReservation.ABSENT));
+    const recettes = montant(servies);
     const offres = servies.filter((r) => r.antiGaspi);
-    const gramme = offres.reduce((s, r) => s + (r.menuItem.plat.poidsPortionG ?? 0), 0);
+    const repasOffres = nb(offres);
+    const gramme = offres.reduce(
+      (t, r) => t + r._count._all * (platDe.get(r.menuItemId)?.poidsPortionG ?? 0),
+      0,
+    );
     // Poids sauvés plat par plat (repas vendus à prix réduit × poids d'une portion).
     const parPlatEvite = new Map<string, { plat: string; grammes: number; repas: number }>();
     for (const r of offres) {
-      const l = parPlatEvite.get(r.menuItem.plat.id) ?? {
-        plat: r.menuItem.plat.nom,
-        grammes: 0,
-        repas: 0,
-      };
-      l.grammes += r.menuItem.plat.poidsPortionG ?? 0;
-      l.repas += 1;
-      parPlatEvite.set(r.menuItem.plat.id, l);
+      const p = platDe.get(r.menuItemId);
+      if (!p) continue;
+      const l = parPlatEvite.get(p.id) ?? { plat: p.nom, grammes: 0, repas: 0 };
+      l.grammes += r._count._all * (p.poidsPortionG ?? 0);
+      l.repas += r._count._all;
+      parPlatEvite.set(p.id, l);
     }
 
     // Fréquentation : repas servis par semaine (lundi → dimanche).
     const parSemaine = new Map<string, number>();
     for (const r of servies) {
-      const lundi = lundiDe(r.date.toISOString().slice(0, 10));
-      parSemaine.set(lundi, (parSemaine.get(lundi) ?? 0) + 1);
+      const lundi = lundiDe(jourDe(r.date));
+      parSemaine.set(lundi, (parSemaine.get(lundi) ?? 0) + r._count._all);
     }
     const frequentation = [...parSemaine.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
@@ -108,10 +117,10 @@ export class RapportsService {
     // Ventes par catégorie, plus les offres de fin de service.
     const categories = new Map<string, { ventes: number; montant: number }>();
     for (const r of servies) {
-      const c = r.menuItem.plat.categorie;
+      const c = platDe.get(r.menuItemId)?.categorie ?? 'PLAT';
       const ligne = categories.get(c) ?? { ventes: 0, montant: 0 };
-      ligne.ventes += 1;
-      ligne.montant += r.prix;
+      ligne.ventes += r._count._all;
+      ligne.montant += r._sum.prix ?? 0;
       categories.set(c, ligne);
     }
     const ventes = [...categories.entries()].map(([categorie, v]) => ({ categorie, ...v }));
@@ -134,19 +143,18 @@ export class RapportsService {
     return {
       periode: { debut: jourDebut, fin: jourFin, jours: nbJours },
       repasServis: {
-        total: servies.length,
-        presence:
-          servies.length + absents ? un((servies.length / (servies.length + absents)) * 100) : 0,
-        evolution: precServies ? un(((servies.length - precServies) / precServies) * 100) : null,
+        total: nbServies,
+        presence: nbServies + absents ? un((nbServies / (nbServies + absents)) * 100) : 0,
+        evolution: precServies ? un(((nbServies - precServies) / precServies) * 100) : null,
       },
       recettes: {
         total: recettes,
-        ticketMoyen: servies.length ? Math.round(recettes / servies.length) : 0,
+        ticketMoyen: nbServies ? Math.round(recettes / nbServies) : 0,
       },
       gaspillageEvite: {
         kg: un(gramme / 1000),
-        repas: offres.length,
-        offres: new Set(offres.map((r) => r.date.toISOString().slice(0, 10))).size,
+        repas: repasOffres,
+        offres: new Set(offres.map((r) => jourDe(r.date))).size,
         parPlat: [...parPlatEvite.values()]
           .sort((a, b) => b.grammes - a.grammes)
           .slice(0, 5)
@@ -159,7 +167,7 @@ export class RapportsService {
       frequentation,
       recharges: { total: totalRecharges, parMoyen },
       ventes,
-      offresFinService: { ventes: offres.length, montant: offres.reduce((s, r) => s + r.prix, 0) },
+      offresFinService: { ventes: repasOffres, montant: montant(offres) },
       notesPlats,
     };
   }

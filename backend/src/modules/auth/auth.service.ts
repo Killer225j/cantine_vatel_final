@@ -22,7 +22,11 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateMeDto } from './dto/update-me.dto';
 
-const BCRYPT_ROUNDS = 12;
+/**
+ * Coût du hachage des mots de passe. 10 reste dans les recommandations courantes et divise
+ * par 4 le temps d'une connexion par rapport à 12 (≈ 1,6 s mesuré sur l'hébergement gratuit).
+ */
+const BCRYPT_ROUNDS = 10;
 
 export class MeResponse {
   @ApiProperty() id!: string;
@@ -99,6 +103,11 @@ export class AuthService {
         message: 'Ce compte est désactivé. Contactez l’administration de la cantine.',
         reason: ERROR_REASON.ACCOUNT_DEACTIVATED,
       });
+    }
+    // Compte haché avec un coût plus élevé : on le ré-enregistre au coût actuel, une seule fois.
+    if (bcrypt.getRounds(user.passwordHash) > BCRYPT_ROUNDS) {
+      const nouveau = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+      await this.authRepository.updatePasswordHash(user.id, nouveau);
     }
     return this.openSession(user);
   }

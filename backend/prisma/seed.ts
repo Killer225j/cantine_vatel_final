@@ -151,7 +151,7 @@ const sansAccent = (s: string) =>
 
 async function main(): Promise<void> {
   const aujourdHui = aujourdhui();
-  const passwordHash = await bcrypt.hash(MOT_DE_PASSE_DEMO, 12);
+  const passwordHash = await bcrypt.hash(MOT_DE_PASSE_DEMO, 10);
 
   // ─── 1. Allergènes ────────────────────────────────────────────────────────
   for (const a of D.allergenes) {

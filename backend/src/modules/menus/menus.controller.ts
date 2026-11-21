@@ -13,7 +13,7 @@ import { Role } from '@prisma/client';
 import { CurrentUser, JwtPayload } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { FORMAT_JOUR } from '../../common/utils/dates.util';
-import { ComposerMenuDto, DefinirCreneauxDto, SemaineDto } from './menus.dto';
+import { AutourDto, ComposerMenuDto, DefinirCreneauxDto, SemaineDto } from './menus.dto';
 import { MenusService } from './menus.service';
 
 export function jourValide(jour: string): string {
@@ -35,6 +35,16 @@ export class MenusController {
   })
   semaine(@CurrentUser() user: JwtPayload, @Query() dto: SemaineDto) {
     return this.menus.semaine(user, dto.debut, dto.enfantId);
+  }
+
+  @Get('autour')
+  @ApiOperation({
+    summary: "Menus des jours autour d'aujourd'hui, en un seul appel",
+    description:
+      'Par défaut 5 jours avant et 5 jours après. Les dimanches sont omis, les samedis seulement s’ils ont un menu. Même contenu par jour que /menus/semaine.',
+  })
+  autour(@CurrentUser() user: JwtPayload, @Query() dto: AutourDto) {
+    return this.menus.autour(user, dto.avant ?? 5, dto.apres ?? 5, dto.enfantId);
   }
 
   @Get(':date')

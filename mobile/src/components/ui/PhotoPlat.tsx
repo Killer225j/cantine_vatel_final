@@ -11,9 +11,12 @@ interface Props {
   rayon?: number;
 }
 
-/** Photo d'un plat ; si le fichier manque, les initiales sur fond pâle. */
+/**
+ * Photo d'un plat. Les petites vignettes (listes) chargent la miniature de 240 px (≈ 14 Ko)
+ * au lieu de la photo d'origine (≈ 100 Ko). Si le fichier manque, les initiales sur fond pâle. */
 export function PhotoPlat({ uri, nom, taille = 64, largeur, rayon = 14 }: Props) {
   const [echec, setEchec] = useState(false);
+  const source = uri && taille <= 100 && !largeur ? uri.replace('/plats/', '/plats/min/') : uri;
   const dimensions = { width: largeur ?? taille, height: taille, borderRadius: rayon };
   const initiales = nom
     .split(/\s+/)
@@ -23,7 +26,7 @@ export function PhotoPlat({ uri, nom, taille = 64, largeur, rayon = 14 }: Props)
     .join('');
 
   if (uri && !echec) {
-    return <Image source={{ uri }} style={[dimensions, styles.image]} onError={() => setEchec(true)} />;
+    return <Image source={{ uri: source ?? uri }} style={[dimensions, styles.image]} onError={() => setEchec(true)} />;
   }
   return (
     <View style={[dimensions, styles.repli]}>

@@ -16,6 +16,29 @@ import { FORMAT_JOUR } from '../../common/utils/dates.util';
 
 const HEURE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+export class AutourDto {
+  @ApiPropertyOptional({ example: 5, description: "Jours avant aujourd'hui (0 à 14, défaut 5)" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(14)
+  avant?: number;
+
+  @ApiPropertyOptional({ example: 5, description: "Jours après aujourd'hui (0 à 14, défaut 5)" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(14)
+  apres?: number;
+
+  @ApiPropertyOptional({ description: "Pour un parent : l'enfant dont on vérifie les allergies" })
+  @IsOptional()
+  @IsString()
+  enfantId?: string;
+}
+
 export class SemaineDto {
   @ApiPropertyOptional({
     example: '2026-11-23',

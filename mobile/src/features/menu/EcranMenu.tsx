@@ -50,29 +50,10 @@ export function EcranMenu() {
   const charger = useCallback(async () => {
     try {
       const aujour = aujourdhui();
-      // Les 5 jours avant et après aujourd'hui : l'API renvoie une semaine à la fois, on assemble.
-      const decale = (n: number) => {
-        const d = new Date(`${aujour}T12:00:00Z`);
-        d.setUTCDate(d.getUTCDate() + n);
-        return d.toISOString().slice(0, 10);
-      };
-      const lundiDe = (iso: string) => {
-        const d = new Date(`${iso}T12:00:00Z`);
-        d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
-        return d.toISOString().slice(0, 10);
-      };
-      const debut = decale(-5);
-      const fin = decale(5);
-      const lundis = [...new Set([lundiDe(debut), lundiDe(aujour), lundiDe(fin)])];
-      const [semaines, p] = await Promise.all([
-        Promise.all(lundis.map((l) => cantineApi.semaine(l))),
-        cantineApi.portefeuille(),
-      ]);
-      const jours = semaines
-        .flatMap((sem) => sem.jours)
-        .filter((j) => j.date >= debut && j.date <= fin)
-        .sort((x, y) => x.date.localeCompare(y.date));
-      const s: Semaine = { ...semaines[0], jours };
+      // Les 5 jours avant et après aujourd'hui, en un seul appel.
+      const [s, p] = await Promise.all([cantineApi.autour(5, 5), cantineApi.portefeuille()]);
+      const jours = s.jours;
+
       setSemaine(s);
       setPortefeuille(p);
       setErreur('');

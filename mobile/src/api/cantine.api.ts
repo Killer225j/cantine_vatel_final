@@ -41,7 +41,7 @@ export interface JourMenu {
 }
 
 export interface Semaine {
-  lundi: string;
+  lundi?: string;
   allergies: Allergene[];
   jours: JourMenu[];
 }
@@ -173,6 +173,7 @@ const lire = async <T>(url: string, params?: Record<string, string | undefined>)
   (await api.get<{ data: T }>(url, { params })).data.data;
 
 export const cantineApi = {
+  autour: (avant = 5, apres = 5) => lire<Semaine>('/menus/autour', { avant: String(avant), apres: String(apres) }),
   semaine: (debut?: string) => lire<Semaine>('/menus/semaine', { debut }),
   creneaux: (date: string) => lire<Creneau[]>(`/menus/${date}/creneaux`),
   portefeuille: () => lire<Portefeuille>('/portefeuille/me'),

@@ -66,6 +66,7 @@ model LienParent {
   createdAt DateTime @default(now())
 
   @@id([parentId, enfantId])
+  @@index([enfantId])
   @@map("liens_parent")
 }
 
@@ -196,6 +197,7 @@ model Reservation {
   @@index([userId, date])
   @@index([date, statut])
   @@index([creneauId, statut])
+  @@index([menuItemId])
   @@map("reservations")
 }
 
@@ -251,6 +253,8 @@ model Transaction {
   creeLe         DateTime          @default(now())
 
   @@index([portefeuilleId, creeLe])
+  @@index([type, statut, creeLe])
+  @@index([reservationId])
   @@map("transactions")
 }
 
