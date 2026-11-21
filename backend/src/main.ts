@@ -55,6 +55,10 @@ async function bootstrap(): Promise<void> {
     .addTag('Réservations', 'Réserver, annuler, commandes du jour, comptoir')
     .addTag('Portefeuille', 'Solde et historique')
     .addTag('Statistiques', 'Tableau de bord et prévision anti-gaspi')
+    .addTag('Parents', 'Enfants liés, solde, historique, seuil d’alerte')
+    .addTag('Anti-gaspi', 'Offre de fin de service à prix réduit')
+    .addTag('Notifications', 'Alertes et rappels')
+    .addTag('Recharges', 'Recharge du portefeuille (paiement mobile simulé)')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig, {

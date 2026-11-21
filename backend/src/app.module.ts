@@ -15,6 +15,10 @@ import { MenusModule } from './modules/menus/menus.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { PortefeuilleModule } from './modules/portefeuille/portefeuille.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { ParentsModule } from './modules/parents/parents.module';
+import { RechargesModule } from './modules/recharges/recharges.module';
+import { AntiGaspiModule } from './modules/anti-gaspi/anti-gaspi.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -37,6 +41,10 @@ import { StatsModule } from './modules/stats/stats.module';
     ReservationsModule,
     PortefeuilleModule,
     StatsModule,
+    ParentsModule,
+    RechargesModule,
+    AntiGaspiModule,
+    NotificationsModule,
   ],
   providers: [
     // Toute route exige un JWT, sauf celles marquées @Public().

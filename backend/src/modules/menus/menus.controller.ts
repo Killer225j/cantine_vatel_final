@@ -16,7 +16,7 @@ import { FORMAT_JOUR } from '../../common/utils/dates.util';
 import { ComposerMenuDto, DefinirCreneauxDto, SemaineDto } from './menus.dto';
 import { MenusService } from './menus.service';
 
-function jourValide(jour: string): string {
+export function jourValide(jour: string): string {
   if (!FORMAT_JOUR.test(jour)) throw new BadRequestException('Date attendue au format AAAA-MM-JJ.');
   return jour;
 }

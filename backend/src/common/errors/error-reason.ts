@@ -42,6 +42,14 @@ export const ERROR_REASON = {
   RESERVATION_ANNULEE: 'RESERVATION_ANNULEE',
   /** Le plat contient un allergène de l'élève : le contrôle doit être confirmé avant de servir. */
   CONTROLE_ALLERGIE_REQUIS: 'CONTROLE_ALLERGIE_REQUIS',
+  /** Aucun élève ne porte ce code de liaison. */
+  CODE_LIAISON_INCONNU: 'CODE_LIAISON_INCONNU',
+  /** Cet enfant est déjà lié à ce compte parent. */
+  DEJA_LIE: 'DEJA_LIE',
+  /** Cet élève n'est pas lié à ce compte parent. */
+  ENFANT_NON_LIE: 'ENFANT_NON_LIE',
+  /** La recharge n'est plus en attente (déjà payée ou échouée). */
+  RECHARGE_TERMINEE: 'RECHARGE_TERMINEE',
   /** Conflit d'écriture concurrente : réessayer. */
   CONFLIT_CONCURRENT: 'CONFLIT_CONCURRENT',
   /** Erreur inattendue : le détail n'est pas exposé au client. */
