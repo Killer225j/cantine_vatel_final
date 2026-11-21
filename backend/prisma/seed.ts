@@ -197,7 +197,21 @@ async function main(): Promise<void> {
       solde: 2000 + Math.round(alea() * 16) * 500,
     });
   }
-  const comptes = [...D.comptes, ...figurants];
+  // Un parent pour un figurant sur trois (même nom de famille), lié à son enfant.
+  const parentsFigurants: Donnees['comptes'] = [];
+  figurants.forEach((f, i) => {
+    if (i % 3 !== 0) return;
+    const prenom = choisir(PRENOMS);
+    parentsFigurants.push({
+      email: `parent.${sansAccent(f.lastName ?? '')}${i + 1}@vatel.ci`,
+      role: Role.PARENT,
+      firstName: prenom,
+      lastName: f.lastName,
+      allergenes: [],
+      enfants: [f.email],
+    });
+  });
+  const comptes = [...D.comptes, ...figurants, ...parentsFigurants];
   for (const c of comptes) {
     const donnees = {
       role: c.role,
@@ -472,18 +486,27 @@ async function main(): Promise<void> {
     if (rechargees > 0) continue;
     const voulu = e.solde ?? 3000;
     const montant = voulu + (depenses.get(e.user.id) ?? 0);
+    const premier = Math.floor(montant * 0.5);
+    const deuxieme = Math.floor(montant * 0.3);
+    const parts = [
+      { montant: premier, jours: -26 },
+      { montant: deuxieme, jours: -12 },
+      { montant: montant - premier - deuxieme, jours: -4 },
+    ];
     await prisma.$transaction([
-      prisma.transaction.create({
-        data: {
-          portefeuilleId,
-          type: TypeTransaction.RECHARGE,
-          montant,
-          moyen: moyenAuHasard(),
-          reference: `RC-${ajouterJours(aujourdHui, -30).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`,
-          payeurId: e.user.id,
-          creeLe: new Date(`${ajouterJours(aujourdHui, -30)}T09:00:00Z`),
-        },
-      }),
+      ...parts.map((p) =>
+        prisma.transaction.create({
+          data: {
+            portefeuilleId,
+            type: TypeTransaction.RECHARGE,
+            montant: p.montant,
+            moyen: moyenAuHasard(),
+            reference: `RC-${ajouterJours(aujourdHui, p.jours).replace(/-/g, '')}-${randomUUID().slice(0, 8).toUpperCase()}`,
+            payeurId: e.user.id,
+            creeLe: new Date(`${ajouterJours(aujourdHui, p.jours)}T09:00:00Z`),
+          },
+        }),
+      ),
       prisma.portefeuille.update({ where: { id: portefeuilleId }, data: { solde: voulu } }),
     ]);
   }
@@ -495,6 +518,31 @@ async function main(): Promise<void> {
       create: s,
       update: {},
     });
+  }
+
+  if ((await prisma.mouvementStock.count()) === 0) {
+    const articles = new Map((await prisma.articleStock.findMany()).map((a) => [a.nom, a.id]));
+    const aujourdHuiA = (jours: number, heure: string) =>
+      new Date(`${ajouterJours(aujourdHui, jours)}T${heure}:00Z`);
+    const historique: [string, number, string, number, string][] = [
+      ['Attiéké', -20, 'Préparation du service', 0, '09:35'],
+      ['Poulet', -12, 'Préparation du service', 0, '09:40'],
+      ['Poisson chinchard', -3, 'Perte ou casse', -1, '16:10'],
+      ['Banane plantain', 40, 'Livraison fournisseur', -1, '07:30'],
+      ['Riz parfumé', 60, 'Livraison fournisseur', -2, '07:15'],
+      ['Tomates', -8, 'Préparation du service', -2, '09:30'],
+      ['Huile de palme', -4, 'Préparation du service', -3, '09:20'],
+      ['Igname', 35, 'Livraison fournisseur', -4, '07:45'],
+    ];
+    const lignes = historique
+      .filter(([nom]) => articles.has(nom))
+      .map(([nom, delta, motif, jours, heure]) => ({
+        articleId: articles.get(nom)!,
+        delta,
+        motif,
+        creeLe: aujourdHuiA(jours, heure),
+      }));
+    if (lignes.length) await prisma.mouvementStock.createMany({ data: lignes });
   }
 
   const [nbUsers, nbResa, nbMenus] = await Promise.all([
