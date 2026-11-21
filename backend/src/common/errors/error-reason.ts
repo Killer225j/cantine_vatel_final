@@ -54,6 +54,8 @@ export const ERROR_REASON = {
   PAS_SERVIE: 'PAS_SERVIE',
   /** Ce repas a déjà reçu un avis. */
   DEJA_NOTE: 'DEJA_NOTE',
+  /** La sortie demandée dépasse la quantité en stock. */
+  STOCK_INSUFFISANT: 'STOCK_INSUFFISANT',
   /** Conflit d'écriture concurrente : réessayer. */
   CONFLIT_CONCURRENT: 'CONFLIT_CONCURRENT',
   /** Erreur inattendue : le détail n'est pas exposé au client. */
