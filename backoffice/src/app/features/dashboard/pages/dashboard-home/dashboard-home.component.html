@@ -276,18 +276,25 @@
         @for (a of liste; track a.id) {
           <div class="flex items-center gap-3 py-1.5 text-sm border-b border-gray-100">
             <span class="flex-1 truncate text-gray-800">{{ a.nom }}</span>
-            <div class="w-24 h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div
+              class="w-24 h-2.5 rounded-full overflow-hidden shrink-0"
+              [class]="a.statut === 'RUPTURE' ? 'bg-red-100 ring-1 ring-red-300' : 'bg-gray-200'"
+            >
               <div
                 class="h-full rounded-full"
                 [class]="a.statut === 'RUPTURE' ? 'bg-error' : 'bg-warning'"
                 [style.width.%]="a.niveau"
               ></div>
             </div>
-            <span class="w-24 text-right font-semibold">{{ a.quantite }} {{ a.unite }}</span>
             <span
-              class="text-[11px] font-semibold rounded-full px-2 py-0.5"
+              class="w-20 text-right font-semibold whitespace-nowrap shrink-0"
+              [class.text-error]="a.statut === 'RUPTURE'"
+              >{{ a.quantite }} {{ a.unite }}</span
+            >
+            <span
+              class="w-16 shrink-0 text-center text-[11px] font-semibold rounded-full py-0.5"
               [class]="
-                a.statut === 'RUPTURE' ? 'bg-red-50 text-error' : 'bg-amber-50 text-warning'
+                a.statut === 'RUPTURE' ? 'bg-error text-white' : 'bg-amber-100 text-warning'
               "
               >{{ a.statut === 'RUPTURE' ? 'Rupture' : 'Bas' }}</span
             >

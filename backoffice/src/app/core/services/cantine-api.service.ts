@@ -360,7 +360,14 @@ export class CantineApi {
       .post<Enveloppe<Reservation>>(`${this.base}/reservations/${id}/servir`, { controleAllergie })
       .pipe(map((r) => r.data));
   }
-  lancerOffre(date: string, o: { reduction: number; dureeMinutes: number }) {
+  lancerOffre(
+    date: string,
+    o: {
+      reduction: number;
+      dureeMinutes: number;
+      destinataires?: 'PRESENTS' | 'ELEVES' | 'ELEVES_ET_PARENTS';
+    },
+  ) {
     return this.http.post<Enveloppe<{ plats: number; elevesNotifies: number; jusqua: string }>>(
       `${this.base}/menus/${date}/anti-gaspi`,
       o,

@@ -271,7 +271,9 @@ function CartePlat({ item, onPress }: { item: ItemMenu; onPress: () => void }) {
               <Text style={styles.cartePrix}>{fcfa(item.prixAntiGaspi as number)}</Text>
               <Text style={styles.prixBarre}>{fcfa(p.prix)}</Text>
               <View style={styles.badgeOffre}>
-                <Text style={styles.badgeOffreTexte}>Fin de service</Text>
+                <Text style={styles.badgeOffreTexte}>
+                  −{Math.round((1 - (item.prixAntiGaspi as number) / p.prix) * 100)} %
+                </Text>
               </View>
             </>
           ) : (
@@ -365,7 +367,7 @@ const styles = StyleSheet.create({
   carteNom: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
   barre: { textDecorationLine: 'line-through', color: Colors.textSecondary },
   carteDescription: { fontSize: 13, color: Colors.textSecondary, marginTop: 2, lineHeight: 18 },
-  carteBas: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
+  carteBas: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 4, marginTop: 6 },
   cartePrix: { fontSize: 15, fontWeight: '800', color: Colors.primaryDark },
   carteNote: { fontSize: 13, color: Colors.textPrimary, fontWeight: '600' },
   carteAlerte: { fontSize: 12, color: Colors.error, fontWeight: '700', marginTop: 6 },

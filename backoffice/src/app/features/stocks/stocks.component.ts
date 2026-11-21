@@ -136,7 +136,12 @@ const nf = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }
                       <td class="py-2.5 pr-3 font-semibold text-gray-800">{{ a.nom }}</td>
                       <td class="py-2.5 pr-3 w-36">
                         <span
-                          class="block h-2 rounded-full bg-gray-100 overflow-hidden"
+                          class="block h-2.5 rounded-full overflow-hidden"
+                          [class]="
+                            a.statut === 'RUPTURE'
+                              ? 'bg-red-100 ring-1 ring-red-300'
+                              : 'bg-gray-200'
+                          "
                           aria-hidden="true"
                         >
                           <span
@@ -146,7 +151,10 @@ const nf = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }
                           ></span>
                         </span>
                       </td>
-                      <td class="py-2.5 pr-3 text-right">
+                      <td
+                        class="py-2.5 pr-3 text-right whitespace-nowrap"
+                        [class.text-error]="a.statut === 'RUPTURE'"
+                      >
                         <b>{{ nf(a.quantite) }}</b> {{ a.unite }}
                       </td>
                       <td class="py-2.5 pr-3 text-right text-gray-500">
@@ -154,13 +162,13 @@ const nf = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }
                       </td>
                       <td class="py-2.5 pr-3">
                         <span
-                          class="text-xs font-semibold rounded-full px-2.5 py-1"
+                          class="inline-block w-[4.5rem] text-center text-xs font-semibold rounded-full py-1"
                           [class]="
                             a.statut === 'OK'
                               ? 'bg-green-50 text-success'
                               : a.statut === 'BAS'
-                                ? 'bg-amber-50 text-warning'
-                                : 'bg-red-50 text-error'
+                                ? 'bg-amber-100 text-warning'
+                                : 'bg-error text-white'
                           "
                           >{{
                             a.statut === 'OK' ? 'OK' : a.statut === 'BAS' ? 'Bas' : 'Rupture'

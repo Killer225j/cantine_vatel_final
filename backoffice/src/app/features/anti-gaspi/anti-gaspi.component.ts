@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { interval, lastValueFrom } from 'rxjs';
 import {
   CantineApi,
@@ -32,7 +33,7 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
 @Component({
   selector: 'app-anti-gaspi',
   standalone: true,
-  imports: [DatePipe, StatTileComponent, CardComponent, EmptyStateComponent, SkeletonComponent],
+  imports: [FormsModule, DatePipe, StatTileComponent, CardComponent, EmptyStateComponent, SkeletonComponent],
   template: `
     <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
       <div class="max-w-2xl">
@@ -232,10 +233,13 @@ const arrondi50 = (n: number) => Math.round(n / 50) * 50;
                   >
                   <select
                     id="ag-dest"
-                    disabled
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600"
+                    [ngModel]="destinataires()"
+                    (ngModelChange)="destinataires.set($event)"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
                   >
-                    <option>Présents aujourd'hui</option>
+                    <option value="PRESENTS">Présents aujourd'hui</option>
+                    <option value="ELEVES">Tous les élèves</option>
+                    <option value="ELEVES_ET_PARENTS">Élèves et parents</option>
                   </select>
                 </div>
               </div>
@@ -343,6 +347,7 @@ export class AntiGaspiComponent implements OnInit {
   confirmation = signal(false);
   reduction = signal(50);
   duree = signal(45);
+  destinataires = signal<'PRESENTS' | 'ELEVES' | 'ELEVES_ET_PARENTS'>('PRESENTS');
 
   /** Les plats du jour avec leurs portions préparées, servies, restantes et vendues en offre. */
   lignes = computed<Ligne[] | null>(() => {
@@ -476,9 +481,10 @@ export class AntiGaspiComponent implements OnInit {
         this.api.lancerOffre(this.aujourdhui, {
           reduction: this.reduction(),
           dureeMinutes: this.duree(),
+          destinataires: this.destinataires(),
         }),
       );
-      this.toast.success(`Offre −${this.reduction()} % envoyée à ${r.data.elevesNotifies} élèves.`);
+      this.toast.success(`Offre −${this.reduction()} % envoyée à ${r.data.elevesNotifies} personne(s).`);
       this.confirmation.set(false);
       this.charger();
     } catch {

@@ -6,6 +6,9 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { jourValide } from '../menus/menus.controller';
 import { AntiGaspiService } from './anti-gaspi.service';
 
+export const DESTINATAIRES = ['PRESENTS', 'ELEVES', 'ELEVES_ET_PARENTS'] as const;
+export type Destinataires = (typeof DESTINATAIRES)[number];
+
 export class OuvrirOffreDto {
   @ApiPropertyOptional({ example: 50, description: 'Réduction en % (10 à 80). Défaut 50.' })
   @IsOptional()
@@ -23,6 +26,15 @@ export class OuvrirOffreDto {
   @IsInt()
   @IsIn([30, 45, 60], { message: 'La durée est de 30, 45 ou 60 minutes.' })
   dureeMinutes?: number;
+
+  @ApiPropertyOptional({
+    enum: DESTINATAIRES,
+    description:
+      'Qui est prévenu : PRESENTS (élèves ayant réservé aujourd’hui, défaut), ELEVES (tous les élèves) ou ELEVES_ET_PARENTS.',
+  })
+  @IsOptional()
+  @IsIn(DESTINATAIRES as unknown as string[])
+  destinataires?: Destinataires;
 
   @ApiPropertyOptional({ description: 'Plats concernés (défaut : tous les plats du jour).' })
   @IsOptional()

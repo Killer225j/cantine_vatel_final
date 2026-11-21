@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CategoriePlat, StatutReservation } from '@prisma/client';
+import { CategoriePlat, Role, StatutReservation } from '@prisma/client';
 import { aujourdhui, versDate } from '../../common/utils/dates.util';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { STATUTS_OCCUPANT } from '../menus/menus.service';
@@ -15,7 +15,12 @@ export class AntiGaspiService {
    */
   async ouvrir(
     jour: string,
-    dto: { reduction?: number; dureeMinutes?: number; menuItemIds?: string[] },
+    dto: {
+      reduction?: number;
+      dureeMinutes?: number;
+      menuItemIds?: string[];
+      destinataires?: 'PRESENTS' | 'ELEVES' | 'ELEVES_ET_PARENTS';
+    },
     maintenant = new Date(),
   ) {
     const reduction = dto.reduction ?? 50;
@@ -48,11 +53,28 @@ export class AntiGaspiService {
       ),
     ]);
 
-    const presents = await this.prisma.reservation.findMany({
-      where: { date: versDate(jour), statut: { in: STATUTS_OCCUPANT } },
-      select: { userId: true },
-      distinct: ['userId'],
-    });
+    // Qui est prévenu : les élèves présents (défaut), tous les élèves, ou aussi leurs parents.
+    const cible = dto.destinataires ?? 'PRESENTS';
+    const ids = new Set<string>();
+    if (cible === 'PRESENTS') {
+      const presents = await this.prisma.reservation.findMany({
+        where: { date: versDate(jour), statut: { in: STATUTS_OCCUPANT } },
+        select: { userId: true },
+        distinct: ['userId'],
+      });
+      presents.forEach((p) => ids.add(p.userId));
+    } else {
+      const eleves = await this.prisma.user.findMany({
+        where: { role: Role.ELEVE, isActive: true },
+        select: { id: true },
+      });
+      eleves.forEach((e) => ids.add(e.id));
+      if (cible === 'ELEVES_ET_PARENTS') {
+        const liens = await this.prisma.lienParent.findMany({ select: { parentId: true } });
+        liens.forEach((l) => ids.add(l.parentId));
+      }
+    }
+    const presents = [...ids].map((userId) => ({ userId }));
     const heure = jusqua.toISOString().slice(11, 16).replace(':', 'h');
     await this.prisma.notification.createMany({
       data: presents.map((p) => ({

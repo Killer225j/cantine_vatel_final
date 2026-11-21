@@ -216,12 +216,19 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve, on
                     <View
                       style={[
                         styles.jaugeRemplie,
-                        { width: `${taux}%`, backgroundColor: c.complet ? Colors.warning : Colors.primary },
+                        { width: `${c.complet ? 100 : taux}%`, backgroundColor: c.complet ? Colors.error : Colors.primary },
                       ]}
                     />
                   </View>
+                  <Text style={[styles.jaugeTexte, c.complet && { color: Colors.error, fontWeight: '700' }]}>
+                    {c.complet
+                      ? `${c.reserves}/${c.capacite} · plus aucune place`
+                      : c.reserves === 0
+                        ? `Aucune réservation · ${c.capacite} places libres`
+                        : `${c.reserves}/${c.capacite} réservées`}
+                  </Text>
                 </View>
-                <Text style={[styles.creneauPlaces, c.complet && { color: Colors.warning }]}>
+                <Text style={[styles.creneauPlaces, c.complet && { color: Colors.error, fontWeight: '800' }]}>
                   {c.complet ? 'Complet' : c.placesRestantes <= 8 ? `Plus que ${c.placesRestantes}` : `${c.placesRestantes} places`}
                 </Text>
                 {choisi && <Ionicons name="checkmark-circle" size={22} color={Colors.primary} />}
@@ -366,10 +373,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   creneauChoisi: { borderColor: Colors.primary, backgroundColor: Colors.primaryMuted },
-  creneauComplet: { opacity: 0.55 },
+  creneauComplet: { backgroundColor: Colors.errorLight, borderColor: Colors.error },
   creneauHeure: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginBottom: 8 },
-  jauge: { height: 6, borderRadius: 3, backgroundColor: Colors.borderLight, overflow: 'hidden' },
-  jaugeRemplie: { height: 6, borderRadius: 3 },
+  jauge: { height: 8, borderRadius: 4, backgroundColor: Colors.border, overflow: 'hidden' },
+  jaugeTexte: { fontSize: 11, color: Colors.textSecondary, marginTop: 4 },
+  jaugeRemplie: { height: 8, borderRadius: 4 },
   creneauPlaces: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
   recap: { backgroundColor: Colors.surface, borderRadius: 14, paddingHorizontal: 14 },
   ligne: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 11, gap: 12 },
