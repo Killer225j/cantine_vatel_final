@@ -43,7 +43,7 @@ const nf = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }
         </button>
         <button
           type="button"
-          (click)="ouvrir(null, 'ENTREE')"
+          (click)="ouvrir(null, null)"
           class="px-3.5 py-2 rounded-lg bg-vatel-primary text-white text-sm font-semibold hover:bg-vatel-primary-dark"
         >
           <i class="pi pi-plus mr-1.5" aria-hidden="true"></i>Mouvement de stock
@@ -337,8 +337,12 @@ const nf = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 2 }
                 <select
                   id="mv-motif"
                   [(ngModel)]="m.motif"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                  [disabled]="!m.type"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                 >
+                  @if (!m.type) {
+                    <option value="">Choisir Entrée ou Sortie</option>
+                  }
                   @for (x of motifs(); track x) {
                     <option [value]="x">{{ x }}</option>
                   }
@@ -397,7 +401,7 @@ export class StocksComponent implements OnInit {
   filtre = signal<'' | 'OK' | 'BAS' | 'RUPTURE'>('');
   modale = signal<{
     articleId: string;
-    type: 'ENTREE' | 'SORTIE';
+    type: 'ENTREE' | 'SORTIE' | null;
     quantite: number | null;
     motif: string;
     note: string;
@@ -426,19 +430,24 @@ export class StocksComponent implements OnInit {
         (!this.filtre() || a.statut === this.filtre()) && (!q || a.nom.toLowerCase().includes(q)),
     );
   });
-  motifs = computed(() => (this.modale()?.type === 'SORTIE' ? MOTIFS_SORTIE : MOTIFS_ENTREE));
-  articleChoisi = computed<ArticleStock | null>(
-    () => this.donnees()?.articles.find((a) => a.id === this.modale()?.articleId) ?? null,
-  );
-  depasse = computed(() => {
+  motifs(): string[] {
+    const type = this.modale()?.type;
+    return type === 'SORTIE' ? MOTIFS_SORTIE : type === 'ENTREE' ? MOTIFS_ENTREE : [];
+  }
+  articleChoisi(): ArticleStock | null {
+    return this.donnees()?.articles.find((a) => a.id === this.modale()?.articleId) ?? null;
+  }
+  depasse(): boolean {
     const m = this.modale();
     const a = this.articleChoisi();
     return !!m && !!a && m.type === 'SORTIE' && (m.quantite ?? 0) > a.quantite;
-  });
-  valide = computed(() => {
+  }
+  valide(): boolean {
     const m = this.modale();
-    return !!m && !!m.articleId && (m.quantite ?? 0) > 0 && !!m.motif && !this.depasse();
-  });
+    return (
+      !!m && !!m.type && !!m.articleId && (m.quantite ?? 0) > 0 && !!m.motif && !this.depasse()
+    );
+  }
 
   ngOnInit(): void {
     this.charger();
@@ -463,12 +472,12 @@ export class StocksComponent implements OnInit {
     this.filtre.set('');
   }
 
-  ouvrir(a: ArticleStock | null, type: 'ENTREE' | 'SORTIE'): void {
+  ouvrir(a: ArticleStock | null, type: 'ENTREE' | 'SORTIE' | null): void {
     this.modale.set({
       articleId: a?.id ?? '',
       type,
       quantite: null,
-      motif: (type === 'SORTIE' ? MOTIFS_SORTIE : MOTIFS_ENTREE)[0],
+      motif: type ? (type === 'SORTIE' ? MOTIFS_SORTIE : MOTIFS_ENTREE)[0] : '',
       note: '',
     });
   }
@@ -490,7 +499,7 @@ export class StocksComponent implements OnInit {
     try {
       await lastValueFrom(
         this.api.mouvementStock(m.articleId, {
-          type: m.type,
+          type: m.type as 'ENTREE' | 'SORTIE',
           quantite: Number(m.quantite),
           motif: m.motif,
           note: m.note || undefined,

@@ -261,8 +261,7 @@ const ROLES = [
                           [class]="
                             p.actif ? 'bg-green-50 text-success' : 'bg-gray-100 text-gray-500'
                           "
-                          >{{ p.actif ? 'Actif' : 'Désactivé' }}</span
-                        ><button
+                          >{{ p.actif ? 'Actif' : 'Désactivé' }}</span><button
                           type="button"
                           (click)="basculer(p.id, p.actif)"
                           class="ml-2 w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:text-error hover:border-error"
@@ -332,8 +331,7 @@ const ROLES = [
                           [class]="
                             m.actif ? 'bg-green-50 text-success' : 'bg-gray-100 text-gray-500'
                           "
-                          >{{ m.actif ? 'Actif' : 'Désactivé' }}</span
-                        ><button
+                          >{{ m.actif ? 'Actif' : 'Désactivé' }}</span><button
                           type="button"
                           (click)="basculer(m.id, m.actif)"
                           class="ml-2 w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:text-error hover:border-error"
@@ -657,7 +655,8 @@ export class ComptesComponent implements OnInit {
   parents = computed(() => this.filtrer(this.donnees()?.parents));
   personnel = computed(() => this.filtrer(this.donnees()?.personnel));
 
-  invitationValide = computed(() => {
+  // Méthode (et non computed) : le formulaire est modifié en place par ngModel.
+  invitationValide(): boolean {
     const v = this.invitation();
     return (
       !!v &&
@@ -666,7 +665,7 @@ export class ComptesComponent implements OnInit {
       /\S+@\S+\.\S+/.test(v.email) &&
       (v.role !== 'ELEVE' || v.classe.trim().length > 0)
     );
-  });
+  }
 
   ngOnInit(): void {
     this.charger();
