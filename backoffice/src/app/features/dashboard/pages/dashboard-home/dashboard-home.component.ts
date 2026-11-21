@@ -1,15 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { forkJoin, interval } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
+import {
+  CantineApi,
+  Prevision,
+  StatsJour,
+  heure,
+} from '../../../../core/services/cantine-api.service';
 import { StatTileComponent } from '../../../../shared/components/ui/stat-tile/stat-tile.component';
 import { EmptyStateComponent } from '../../../../shared/components/ui/empty-state/empty-state.component';
-
-interface Stat {
-  label: string;
-  valeur: string;
-  detail: string;
-}
+import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
 
 interface AccesRapide {
   label: string;
@@ -17,44 +20,118 @@ interface AccesRapide {
   icone: string;
   couleur: string;
   fond: string;
+  roles: string[];
 }
 
-/**
- * Tableau de bord du squelette. Les valeurs « — » sont des emplacements : elles seront
- * branchées sur l'API avec le modèle de données (réservations, créneaux, stocks).
- */
+/** Tableau de bord du jour : chiffres, affluence par créneau, prévision et alertes allergie. */
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [DatePipe, RouterLink, StatTileComponent, EmptyStateComponent],
+  imports: [DatePipe, RouterLink, StatTileComponent, EmptyStateComponent, SkeletonComponent],
   templateUrl: './dashboard-home.component.html',
   styleUrl: './dashboard-home.component.scss',
 })
-export class DashboardHomeComponent {
+export class DashboardHomeComponent implements OnInit {
   private authService = inject(AuthService);
+  private api = inject(CantineApi);
+  private destroyRef = inject(DestroyRef);
 
+  readonly h = heure;
   aujourdhui = new Date();
   userName = this.authService.currentUser()?.prenom || 'à vous';
 
-  stats: Stat[] = [
-    { label: 'Repas réservés', valeur: '—', detail: "Réservations confirmées aujourd'hui" },
-    { label: 'Portions à préparer', valeur: '—', detail: 'Prévision anti-gaspillage' },
-    { label: 'Taux de présence', valeur: '— %', detail: 'Moyenne des 4 dernières semaines' },
-    { label: 'Nourriture sauvée', valeur: '— kg', detail: 'Depuis le début du mois' },
-  ];
+  stats = signal<StatsJour | null>(null);
+  prevision = signal<Prevision | null>(null);
+  erreur = signal(false);
 
-  creneaux = [
-    { heure: '11h45 – 12h00', capacite: 40 },
-    { heure: '12h00 – 12h15', capacite: 40 },
-    { heure: '12h15 – 12h30', capacite: 40 },
-    { heure: '12h30 – 12h45', capacite: 40 },
-    { heure: '12h45 – 13h00', capacite: 40 },
-  ];
+  tuiles = computed(() => {
+    const s = this.stats();
+    // L'API renvoie déjà l'écart avec le même jour de la semaine dernière.
+    const evolution = s ? s.evolutionSemaineDerniere : 0;
+    return [
+      {
+        label: 'Repas réservés',
+        valeur: s ? String(s.reserves) : '—',
+        detail: s
+          ? `${evolution >= 0 ? '+' : ''}${evolution} par rapport au même jour la semaine dernière`
+          : '',
+      },
+      {
+        label: 'Portions à préparer',
+        valeur: s ? String(s.portionsAPreparer) : '—',
+        detail: s ? `Absence prévue ${s.tauxAbsence.toLocaleString('fr-FR')} % · marge 5 %` : '',
+      },
+      {
+        label: 'Taux de présence',
+        valeur: s ? `${s.tauxPresence.toLocaleString('fr-FR')} %` : '— %',
+        detail: 'Moyenne des 4 dernières semaines',
+      },
+      {
+        label: 'Nourriture sauvée',
+        valeur: s ? `${s.kgSauvesMois.toLocaleString('fr-FR')} kg` : '— kg',
+        detail: s ? `${s.repasSauvesMois} repas sauvés ce mois-ci` : '',
+      },
+    ];
+  });
 
   accesRapides: AccesRapide[] = [
-    { label: 'Menus', route: '/menus', icone: 'pi-calendar', couleur: '#1b6fa8', fond: '#e7f3fc' },
-    { label: 'Commandes', route: '/commandes', icone: 'pi-list-check', couleur: '#0d3a5c', fond: '#dbeefb' },
-    { label: 'Stocks', route: '/stocks', icone: 'pi-box', couleur: '#3f93cc', fond: '#e7f3fc' },
-    { label: 'Rapports', route: '/rapports', icone: 'pi-chart-bar', couleur: '#12507d', fond: '#dbeefb' },
+    {
+      label: 'Menus',
+      route: '/menus',
+      icone: 'pi-calendar',
+      couleur: '#1b6fa8',
+      fond: '#e7f3fc',
+      roles: ['ADMIN'],
+    },
+    {
+      label: 'Plats',
+      route: '/plats',
+      icone: 'pi-book',
+      couleur: '#12507d',
+      fond: '#dbeefb',
+      roles: ['ADMIN'],
+    },
+    {
+      label: 'Commandes',
+      route: '/commandes',
+      icone: 'pi-list-check',
+      couleur: '#0d3a5c',
+      fond: '#dbeefb',
+      roles: ['ADMIN', 'CUISINE'],
+    },
+    {
+      label: 'Comptoir',
+      route: '/comptoir',
+      icone: 'pi-qrcode',
+      couleur: '#3f93cc',
+      fond: '#e7f3fc',
+      roles: ['ADMIN', 'CUISINE'],
+    },
   ];
+  visibles = computed(() => {
+    const role = this.authService.currentUser()?.role;
+    return this.accesRapides.filter((a) => !!role && a.roles.includes(role));
+  });
+
+  ngOnInit(): void {
+    this.charger();
+    interval(30000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.charger());
+  }
+
+  private charger(): void {
+    forkJoin([this.api.statsJour(), this.api.prevision()]).subscribe({
+      next: ([stats, prevision]) => {
+        this.stats.set(stats);
+        this.prevision.set(prevision);
+        this.erreur.set(false);
+      },
+      error: () => this.erreur.set(true),
+    });
+  }
+
+  pourcentage(reserves: number, capacite: number): number {
+    return capacite ? Math.min(100, Math.round((reserves / capacite) * 100)) : 0;
+  }
 }

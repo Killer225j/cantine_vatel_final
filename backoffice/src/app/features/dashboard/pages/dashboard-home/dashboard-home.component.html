@@ -2,13 +2,24 @@
 <div class="mb-6">
   <h1 class="text-2xl font-bold text-gray-800">Tableau de bord</h1>
   <p class="dash-subtitle">
-    Bienvenue, <strong>{{ userName }}</strong>. Le service du {{ aujourdhui | date: 'EEEE d MMMM' }} en un coup d'œil.
+    Bienvenue, <strong>{{ userName }}</strong>. Le service du
+    {{ aujourdhui | date: 'EEEE d MMMM' }} en un coup d'œil.
+    @if (stats() && !erreur()) {
+      <span class="ml-2 inline-flex items-center gap-1.5 text-xs font-semibold text-success">
+        <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>En direct
+      </span>
+    }
   </p>
+  @if (erreur()) {
+    <p class="text-sm text-error mt-1">
+      Les chiffres n'ont pas pu être chargés. Nouvelle tentative dans quelques secondes.
+    </p>
+  }
 </div>
 
 <!-- ─── Indicateurs ──────────────────────────────────────────── -->
 <div class="stats-grid mb-6">
-  @for (s of stats; track s.label) {
+  @for (s of tuiles(); track s.label) {
     <div class="stat-carte">
       <app-stat-tile [value]="s.valeur" [label]="s.label" />
       <span class="stat-sous">{{ s.detail }}</span>
@@ -18,26 +29,50 @@
 
 <!-- ─── Rangée centrale ──────────────────────────────────────── -->
 <div class="mid-grid mb-5">
-
   <!-- Affluence par créneau -->
   <div class="widget-card">
-    <h3 class="widget-title">Affluence par créneau</h3>
-    <ul class="creneaux">
-      @for (c of creneaux; track c.heure) {
-        <li class="creneau">
-          <span class="creneau-heure">{{ c.heure }}</span>
-          <span class="creneau-jauge" aria-hidden="true"></span>
-          <span class="creneau-places">— / {{ c.capacite }}</span>
-        </li>
+    <div class="flex items-baseline justify-between mb-3">
+      <h3 class="widget-title">Affluence par créneau</h3>
+      @if (stats(); as s) {
+        <span class="text-xs text-gray-500">
+          {{ s.affluence.reserves }} / {{ s.affluence.capacite }} ({{
+            pourcentage(s.affluence.reserves, s.affluence.capacite)
+          }}
+          %)
+        </span>
       }
-    </ul>
+    </div>
+    @if (stats(); as s) {
+      <ul class="space-y-3">
+        @for (c of s.affluence.creneaux; track c.id) {
+          <li class="flex items-center gap-3 text-sm">
+            <span class="w-24 text-gray-600">{{ h(c.heureDebut) }} – {{ h(c.heureFin) }}</span>
+            <span class="flex-1 h-2.5 rounded-full bg-gray-100 overflow-hidden" aria-hidden="true">
+              <span
+                class="block h-full rounded-full"
+                [class]="c.complet ? 'bg-warning' : 'bg-vatel-primary'"
+                [style.width.%]="pourcentage(c.reserves, c.capacite)"
+              ></span>
+            </span>
+            <span class="w-24 text-right text-gray-700">
+              {{ c.reserves }} / {{ c.capacite }}
+              @if (c.complet) {
+                <span class="text-xs font-semibold text-warning ml-1">Complet</span>
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <app-skeleton height="170px" radius="8px" />
+    }
   </div>
 
   <!-- Accès rapides -->
   <div class="widget-card">
     <h3 class="widget-title mb-4">Accès rapides</h3>
     <div class="quick-grid">
-      @for (q of accesRapides; track q.route) {
+      @for (q of visibles(); track q.route) {
         <a class="quick-btn" [routerLink]="q.route" [style.--qa-color]="q.couleur">
           <span class="quick-icon-wrap" [style.background]="q.fond">
             <i class="pi {{ q.icone }}" [style.color]="q.couleur"></i>
@@ -50,29 +85,86 @@
       <span class="help-icon"><i class="pi pi-qrcode"></i></span>
       <span>
         <p class="help-title">Ouvrir le comptoir</p>
-        <p class="help-sub">Scan des réservations et alertes allergie</p>
+        <p class="help-sub">Vérification des codes et alertes allergie</p>
       </span>
     </a>
   </div>
-
 </div>
 
 <!-- ─── Rangée du bas ────────────────────────────────────────── -->
 <div class="bottom-grid">
+  <!-- Prévision anti-gaspillage -->
   <div class="widget-card">
-    <app-empty-state
-      icon="pi-exclamation-triangle"
-      title="Alertes allergie"
-      message="Les réservations à risque du jour s'afficheront ici."
-    />
+    <h3 class="widget-title mb-1">Prévision anti-gaspillage</h3>
+    <p class="text-xs text-gray-500 mb-3">À préparer = réservés × (1 − absence) + 5 %</p>
+    @if (prevision(); as p) {
+      @if (p.plats.length) {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs uppercase text-gray-500 border-b border-gray-200">
+              <th class="py-1.5 font-semibold">Plat</th>
+              <th class="py-1.5 font-semibold text-right">Réservés</th>
+              <th class="py-1.5 font-semibold text-right">Absents</th>
+              <th class="py-1.5 font-semibold text-right">À préparer</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of p.plats; track l.menuItemId) {
+              <tr class="border-b border-gray-100">
+                <td class="py-1.5">{{ l.plat.nom }}</td>
+                <td class="py-1.5 text-right">{{ l.reserves }}</td>
+                <td class="py-1.5 text-right text-gray-500">{{ l.absentsPrevus }}</td>
+                <td class="py-1.5 text-right font-bold text-vatel-primary-dark">
+                  {{ l.aPreparer }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <app-empty-state
+          icon="pi-calendar"
+          title="Pas de menu aujourd'hui"
+          message="Publiez le menu du jour pour voir la prévision."
+        />
+      }
+    } @else {
+      <app-skeleton height="140px" radius="8px" />
+    }
   </div>
+
+  <!-- Alertes allergie -->
   <div class="widget-card">
-    <app-empty-state
-      icon="pi-box"
-      title="Stocks bas"
-      message="Les produits sous le seuil d'alerte s'afficheront ici."
-    />
+    <h3 class="widget-title mb-3">Alertes allergie</h3>
+    @if (stats(); as s) {
+      @if (s.alertesAllergie.length) {
+        <ul class="space-y-2 max-h-64 overflow-y-auto">
+          @for (r of s.alertesAllergie; track $index) {
+            <li class="rounded-lg bg-red-50 border border-error/20 px-3 py-2 text-sm">
+              <p class="font-semibold text-gray-800">
+                {{ r.eleve }} <span class="font-normal text-gray-500">· {{ r.creneau }}</span>
+              </p>
+              <p class="text-xs text-error">
+                {{ r.plat }} contient :
+                @for (a of r.allergenes; track a.code) {
+                  {{ a.nom }}
+                }
+              </p>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-empty-state
+          icon="pi-check-circle"
+          title="Aucune alerte"
+          message="Aucune réservation à risque allergique."
+        />
+      }
+    } @else {
+      <app-skeleton height="140px" radius="8px" />
+    }
   </div>
+
   <div class="widget-card">
     <app-empty-state
       icon="pi-heart"

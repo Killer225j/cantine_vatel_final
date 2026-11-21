@@ -4,7 +4,9 @@
   color: #1b6fa8;
   margin-top: 2px;
 
-  strong { font-weight: 700; }
+  strong {
+    font-weight: 700;
+  }
 }
 
 /* ─── Grilles de mise en page ───────────────────────────────── */
@@ -52,7 +54,9 @@
   border-radius: 10px;
   border: 1.5px solid #e0e0e0;
   text-decoration: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:hover {
     border-color: var(--qa-color);
@@ -68,7 +72,9 @@
   align-items: center;
   justify-content: center;
 
-  i { font-size: 1.1rem; }
+  i {
+    font-size: 1.1rem;
+  }
 }
 
 .quick-label {
@@ -90,7 +96,9 @@
   text-decoration: none;
   transition: background-color 0.15s;
 
-  &:hover { background-color: #12507d; }
+  &:hover {
+    background-color: #12507d;
+  }
 }
 
 .help-icon {
@@ -103,7 +111,10 @@
   justify-content: center;
   flex-shrink: 0;
 
-  i { color: white; font-size: 1.1rem; }
+  i {
+    color: white;
+    font-size: 1.1rem;
+  }
 }
 
 .help-title {
@@ -155,7 +166,10 @@
   font-size: 0.85rem;
 }
 
-.creneau-heure { font-weight: 600; color: #1e293b; }
+.creneau-heure {
+  font-weight: 600;
+  color: #1e293b;
+}
 
 .creneau-jauge {
   height: 8px;
@@ -164,15 +178,25 @@
   overflow: hidden;
 }
 
-.creneau-places { text-align: right; color: #8a93a3; font-size: 0.78rem; }
+.creneau-places {
+  text-align: right;
+  color: #8a93a3;
+  font-size: 0.78rem;
+}
 
 /* ─── Petits écrans ──────────────────────────────────────────── */
 @media (max-width: 1100px) {
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .mid-grid,
-  .bottom-grid { grid-template-columns: 1fr; }
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
-  .stats-grid { grid-template-columns: 1fr; }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
