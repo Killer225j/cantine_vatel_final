@@ -58,6 +58,9 @@ async function bootstrap(): Promise<void> {
     .addTag('Parents', 'Enfants liés, solde, historique, seuil d’alerte')
     .addTag('Anti-gaspi', 'Offre de fin de service à prix réduit')
     .addTag('Notifications', 'Alertes et rappels')
+    .addTag('Comptes', 'Élèves, parents et personnel')
+    .addTag('Rapports', 'Synthèse de période et exports')
+    .addTag('Stocks', 'Quantités, seuils d’alerte et mouvements')
     .addTag('Recharges', 'Recharge du portefeuille (paiement mobile simulé)')
     .build();
 

@@ -19,6 +19,9 @@ import { ParentsModule } from './modules/parents/parents.module';
 import { RechargesModule } from './modules/recharges/recharges.module';
 import { AntiGaspiModule } from './modules/anti-gaspi/anti-gaspi.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { StocksModule } from './modules/stocks/stocks.module';
+import { ComptesModule } from './modules/comptes/comptes.module';
+import { RapportsModule } from './modules/rapports/rapports.module';
 
 @Module({
   imports: [
@@ -45,6 +48,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     RechargesModule,
     AntiGaspiModule,
     NotificationsModule,
+    StocksModule,
+    ComptesModule,
+    RapportsModule,
   ],
   providers: [
     // Toute route exige un JWT, sauf celles marquées @Public().
