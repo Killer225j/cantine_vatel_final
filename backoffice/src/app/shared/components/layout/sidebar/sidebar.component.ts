@@ -39,6 +39,7 @@ export class SidebarComponent {
     { label: 'Anti-gaspillage', icon: 'pi-heart', route: '/anti-gaspi', roles: TOUS },
     { label: 'Stocks', icon: 'pi-box', route: '/stocks', roles: TOUS },
     { label: 'Rapports', icon: 'pi-chart-bar', route: '/rapports', roles: ['ADMIN'] },
+    { label: 'Comptes', icon: 'pi-users', route: '/comptes', roles: ['ADMIN'] },
   ];
 
   visibleItems = computed(() => {

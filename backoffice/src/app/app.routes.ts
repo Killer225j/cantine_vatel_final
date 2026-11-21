@@ -74,20 +74,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/comptoir/comptoir.component').then((m) => m.ComptoirComponent),
       },
-      section(
-        'stocks',
-        ['ADMIN', 'CUISINE'],
-        'Stocks',
-        'pi-box',
-        'Suivre les quantités et être alerté avant une rupture.',
-      ),
-      section(
-        'rapports',
-        ['ADMIN'],
-        'Rapports',
-        'pi-chart-bar',
-        'Fréquentation, recettes, gaspillage évité : exports CSV pour la direction.',
-      ),
+      {
+        path: 'stocks',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'CUISINE'] },
+        loadComponent: () =>
+          import('./features/stocks/stocks.component').then((m) => m.StocksComponent),
+      },
+      {
+        path: 'rapports',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/rapports/rapports.component').then((m) => m.RapportsComponent),
+      },
+      {
+        path: 'comptes',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/comptes/comptes.component').then((m) => m.ComptesComponent),
+      },
       {
         path: 'profile',
         loadComponent: () =>

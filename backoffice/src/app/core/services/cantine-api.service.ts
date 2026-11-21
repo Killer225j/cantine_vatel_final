@@ -175,6 +175,90 @@ export interface FormulairePlat {
   allergenes?: string[];
 }
 
+// ─── Stocks ───
+export type StatutStock = 'OK' | 'BAS' | 'RUPTURE';
+
+export interface ArticleStock {
+  id: string;
+  nom: string;
+  unite: string;
+  quantite: number;
+  seuilAlerte: number;
+  statut: StatutStock;
+  niveau: number;
+}
+
+export interface MouvementStockVue {
+  id: string;
+  article: string;
+  unite: string;
+  delta: number;
+  motif: string;
+  creeLe: string;
+}
+
+export interface Stocks {
+  compteurs: { suivis: number; sousSeuil: number; rupture: number; mouvementsSemaine: number };
+  articles: ArticleStock[];
+  mouvements: MouvementStockVue[];
+}
+
+// ─── Comptes ───
+export interface EleveCompte {
+  id: string;
+  nom: string;
+  email: string;
+  classe: string | null;
+  allergenes: Allergene[];
+  solde: number;
+  seuilAlerte: number;
+  soldeBas: boolean;
+  codeLiaison: string | null;
+  parents: { id: string; nom: string }[];
+  actif: boolean;
+}
+
+export interface ParentCompte {
+  id: string;
+  nom: string;
+  email: string;
+  telephone: string | null;
+  enfants: { id: string; nom: string }[];
+  actif: boolean;
+}
+
+export interface PersonnelCompte {
+  id: string;
+  nom: string;
+  email: string;
+  role: 'ADMIN' | 'CUISINE';
+  actif: boolean;
+}
+
+export interface Comptes {
+  compteurs: { eleves: number; parentsLies: number; elevesAvecAllergie: number; soldesBas: number };
+  eleves: EleveCompte[];
+  parents: ParentCompte[];
+  personnel: PersonnelCompte[];
+}
+
+// ─── Rapports ───
+export interface Synthese {
+  periode: { debut: string; fin: string; jours: number };
+  repasServis: { total: number; presence: number; evolution: number | null };
+  recettes: { total: number; ticketMoyen: number };
+  gaspillageEvite: { kg: number; repas: number; offres: number };
+  satisfaction: { moyenne: number; avis: number };
+  frequentation: { debut: string; fin: string; repas: number }[];
+  recharges: {
+    total: number;
+    parMoyen: { moyen: string | null; montant: number; pourcentage: number }[];
+  };
+  ventes: { categorie: string; ventes: number; montant: number }[];
+  offresFinService: { ventes: number; montant: number };
+  notesPlats: { plat: string; note: number; avis: number }[];
+}
+
 /** Accès typé à l'API de la cantine : chaque méthode renvoie directement le contenu de `data`. */
 @Injectable({ providedIn: 'root' })
 export class CantineApi {
@@ -280,6 +364,47 @@ export class CantineApi {
   cloreOffre(date: string) {
     return this.http.delete<Enveloppe<unknown>>(`${this.base}/menus/${date}/anti-gaspi`);
   }
+  // Stocks
+  stocks(): Observable<Stocks> {
+    return this.get('/stocks');
+  }
+  mouvementStock(
+    id: string,
+    m: { type: 'ENTREE' | 'SORTIE'; quantite: number; motif: string; note?: string },
+  ) {
+    return this.http.post<Enveloppe<ArticleStock>>(`${this.base}/stocks/${id}/mouvements`, m);
+  }
+
+  // Comptes
+  comptes(): Observable<Comptes> {
+    return this.get('/utilisateurs');
+  }
+  inviter(c: { prenom: string; nom: string; email: string; role: string; classe?: string }) {
+    return this.http.post<
+      Enveloppe<{
+        id: string;
+        email: string;
+        role: string;
+        motDePasseTemporaire: string;
+        codeLiaison: string | null;
+      }>
+    >(`${this.base}/utilisateurs`, c);
+  }
+  lierParent(parentId: string, enfantId: string) {
+    return this.http.post<Enveloppe<unknown>>(`${this.base}/utilisateurs/liens`, {
+      parentId,
+      enfantId,
+    });
+  }
+  definirActif(id: string, actif: boolean) {
+    return this.http.patch<Enveloppe<unknown>>(`${this.base}/utilisateurs/${id}/actif`, { actif });
+  }
+
+  // Rapports
+  synthese(debut?: string, fin?: string): Observable<Synthese> {
+    return this.get('/rapports/synthese', { debut, fin });
+  }
+
   creneauxDuJour(date: string): Observable<Creneau[]> {
     return this.get(`/menus/${date}/creneaux`);
   }
