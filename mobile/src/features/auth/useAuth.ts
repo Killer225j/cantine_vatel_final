@@ -14,10 +14,11 @@ const initialState: AuthState = {
   ready: false,
 };
 
-/** L'écran d'arrivée de chaque rôle. ADMIN et CUISINE n'ont pas d'espace mobile. */
+/** L'écran d'arrivée de chaque rôle. L'ADMIN n'a pas d'espace mobile (il utilise le back-office). */
 export function accueilDuRole(role: Role | undefined): string {
   if (role === 'ELEVE') return '/(eleve)/(tabs)';
   if (role === 'PARENT') return '/(parent)/(tabs)';
+  if (role === 'CUISINE') return '/(cuisine)/(tabs)';
   return '/(auth)/login';
 }
 
@@ -86,11 +87,11 @@ function useAuthStore(): AuthStore {
               password: sanitizePassword(form.password),
             };
       const user = await authApi.login(payload);
-      if (user.role !== 'ELEVE' && user.role !== 'PARENT') {
+      if (user.role === 'ADMIN') {
         await authApi.logout();
         update({
           status: 'error',
-          error: 'Ce compte se connecte au back-office, pas à l’appli mobile.',
+          error: 'L’administration se connecte au back-office, pas à l’appli mobile.',
         });
         return null;
       }

@@ -1,7 +1,7 @@
 // Types partagés avec l'API Cantine Vatel (NestJS). Les modèles de la cantine
 // (plats, menus, créneaux, réservations, portefeuille…) s'ajoutent ici avec l'étape 2.
 
-/** Rôles de l'appli mobile : élèves et parents. ADMIN et CUISINE utilisent le back-office. */
+/** Rôles de l'appli mobile : élèves, parents et cuisine (comptoir). L'ADMIN utilise le back-office. */
 export type Role = 'ELEVE' | 'PARENT' | 'ADMIN' | 'CUISINE';
 
 export interface LoginPayload {

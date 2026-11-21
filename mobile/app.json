@@ -36,6 +36,10 @@
           "backgroundColor": "#287aec"
         }
       ],
+      [
+        "expo-camera",
+        { "cameraPermission": "La caméra sert à scanner les QR codes de réservation au comptoir." }
+      ],
       "expo-status-bar"
     ],
     "extra": {
