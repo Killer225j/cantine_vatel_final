@@ -49,6 +49,12 @@ async function bootstrap(): Promise<void> {
     .addTag('Auth', 'Inscription, connexion, jetons et compte')
     .addTag('Navigation', 'Menu de navigation du back-office selon le rôle')
     .addTag('Health', 'Sonde de santé (sert aussi à réveiller Render)')
+    .addTag('Référentiels', 'Allergènes, allergies déclarées, code de liaison')
+    .addTag('Plats', 'Catalogue des plats')
+    .addTag('Menus', 'Menus de la semaine, publication, créneaux')
+    .addTag('Réservations', 'Réserver, annuler, commandes du jour, comptoir')
+    .addTag('Portefeuille', 'Solde et historique')
+    .addTag('Statistiques', 'Tableau de bord et prévision anti-gaspi')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig, {

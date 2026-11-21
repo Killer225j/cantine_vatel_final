@@ -9,6 +9,12 @@ import { PrismaModule } from './shared/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { NavigationModule } from './modules/navigation/navigation.module';
+import { ReferentielsModule } from './modules/referentiels/referentiels.module';
+import { PlatsModule } from './modules/plats/plats.module';
+import { MenusModule } from './modules/menus/menus.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
+import { PortefeuilleModule } from './modules/portefeuille/portefeuille.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -25,6 +31,12 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     AuthModule,
     HealthModule,
     NavigationModule,
+    ReferentielsModule,
+    PlatsModule,
+    MenusModule,
+    ReservationsModule,
+    PortefeuilleModule,
+    StatsModule,
   ],
   providers: [
     // Toute route exige un JWT, sauf celles marquées @Public().
