@@ -78,6 +78,10 @@ export function EcranMenu() {
       })).filter((g) => g.items.length),
     [jourCourant],
   );
+  const offres = (jourCourant?.items ?? []).filter(
+    (i) => !!i.prixAntiGaspi && !!i.antiGaspiJusqua && new Date(i.antiGaspiJusqua) > new Date(),
+  );
+  const jusquaOffre = offres.map((i) => i.antiGaspiJusqua as string).sort().pop();
   const premierPublie = semaine?.jours.find((j) => j.publie && j.items.length);
 
   return (
@@ -138,6 +142,19 @@ export function EcranMenu() {
               })}
             </ScrollView>
 
+            {offres.length > 0 && (
+              <View style={styles.offre} accessibilityRole="alert">
+                <Ionicons name="leaf" size={20} color={Colors.success} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.offreTitre}>Offre de fin de service</Text>
+                  <Text style={styles.offreTexte}>
+                    {offres.length} plat{offres.length > 1 ? 's' : ''} à prix réduit jusqu’à{' '}
+                    {jusquaOffre ? new Date(jusquaOffre).toISOString().slice(11, 16).replace(':', 'h') : ''}. Touchez un plat pour le réserver.
+                  </Text>
+                </View>
+              </View>
+            )}
+
             {!jourCourant?.publie || !jourCourant.items.length ? (
               <EmptyState
                 icon={<Ionicons name="time-outline" size={28} color={Colors.primary} />}
@@ -173,6 +190,7 @@ export function EcranMenu() {
 
 function CartePlat({ item, onPress }: { item: ItemMenu; onPress: () => void }) {
   const p = item.plat;
+  const enOffre = !!item.prixAntiGaspi && !!item.antiGaspiJusqua && new Date(item.antiGaspiJusqua) > new Date();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -192,7 +210,17 @@ function CartePlat({ item, onPress }: { item: ItemMenu; onPress: () => void }) {
           </Text>
         ) : null}
         <View style={styles.carteBas}>
-          <Text style={styles.cartePrix}>{fcfa(p.prix)}</Text>
+          {enOffre ? (
+            <>
+              <Text style={styles.cartePrix}>{fcfa(item.prixAntiGaspi as number)}</Text>
+              <Text style={styles.prixBarre}>{fcfa(p.prix)}</Text>
+              <View style={styles.badgeOffre}>
+                <Text style={styles.badgeOffreTexte}>Fin de service</Text>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.cartePrix}>{fcfa(p.prix)}</Text>
+          )}
           {p.noteMoyenne !== null && (
             <Text style={styles.carteNote}>
               ★ {p.noteMoyenne} <Text style={{ color: Colors.textTertiary }}>({p.nbAvis})</Text>
@@ -268,6 +296,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     marginBottom: 10,
   },
+  offre: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: Colors.successLight, borderWidth: 1, borderColor: Colors.successBorder, borderRadius: 14, padding: 14, marginBottom: 12 },
+  offreTitre: { fontSize: 14, fontWeight: '800', color: Colors.success },
+  offreTexte: { fontSize: 13, color: Colors.textMuted, marginTop: 2, lineHeight: 18 },
+  prixBarre: { fontSize: 12, color: Colors.textTertiary, textDecorationLine: 'line-through' },
+  badgeOffre: { backgroundColor: Colors.successLight, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
+  badgeOffreTexte: { fontSize: 11, fontWeight: '800', color: Colors.success },
   carteIncompatible: { borderColor: Colors.errorBorder, backgroundColor: Colors.errorLight },
   carteNom: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
   barre: { textDecorationLine: 'line-through', color: Colors.textSecondary },

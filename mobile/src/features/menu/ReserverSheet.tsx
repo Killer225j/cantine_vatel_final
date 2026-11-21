@@ -57,10 +57,12 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
 
   if (!item) return <BottomSheetModal visible={false} onClose={onClose} title="" children={null} />;
 
+  const enOffre = !!item.prixAntiGaspi && !!item.antiGaspiJusqua && new Date(item.antiGaspiJusqua) > new Date();
+  const prix = enOffre ? (item.prixAntiGaspi as number) : item.plat.prix;
   const passe = date < aujourdhui();
   const creneau = creneaux?.find((c) => c.id === creneauId) ?? null;
   const solde = portefeuille?.solde ?? 0;
-  const apres = solde - item.plat.prix;
+  const apres = solde - prix;
 
   const chargerCreneaux = async () => {
     setErreur('');
@@ -77,7 +79,7 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
     setEnvoi(true);
     setErreur('');
     try {
-      await cantineApi.reserver(item.id, creneau.id);
+      await cantineApi.reserver(item.id, creneau.id, enOffre);
       setSoldeApres(apres);
       setEtape('succes');
       onReserve();
@@ -113,7 +115,7 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
       case 'confirmer':
         return (
           <Button
-            label={`Payer ${fcfa(item.plat.prix)} et réserver`}
+            label={`Payer ${fcfa(prix)} et réserver`}
             loading={envoi}
             disabled={apres < 0}
             onPress={payer}
@@ -139,7 +141,10 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
           <PhotoPlat uri={item.plat.photoUrl} nom={item.plat.nom} taille={170} largeur="100%" rayon={16} />
           <View style={styles.ligneTitre}>
             <Text style={styles.nom}>{item.plat.nom}</Text>
-            <Text style={styles.prix}>{fcfa(item.plat.prix)}</Text>
+            <View style={{ alignItems: 'flex-end' }}>
+              {enOffre && <Text style={styles.prixBarre}>{fcfa(item.plat.prix)}</Text>}
+              <Text style={styles.prix}>{fcfa(prix)}</Text>
+            </View>
           </View>
           {item.plat.noteMoyenne !== null && (
             <Text style={styles.note}>
@@ -170,7 +175,7 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
       {etape === 'creneau' && (
         <View style={styles.bloc}>
           <Text style={styles.resume}>
-            {item.plat.nom} · {fcfa(item.plat.prix)}
+            {item.plat.nom} · {fcfa(prix)}
           </Text>
           <Text style={styles.astuce}>
             Moins d’attente : 11h45 ou 12h45. Au-delà de 10 min de retard, la place est libérée.
@@ -222,7 +227,7 @@ export function ReserverSheet({ item, date, portefeuille, onClose, onReserve }: 
           </View>
           <View style={styles.recap}>
             <Ligne l="Solde actuel" v={fcfa(solde)} />
-            <Ligne l="Prix du repas" v={`− ${fcfa(item.plat.prix)}`} />
+            <Ligne l="Prix du repas" v={`− ${fcfa(prix)}`} />
             <Ligne l="Solde après" v={fcfa(apres)} fort dernier />
           </View>
           {apres < 0 && <Alerte danger texte="Solde insuffisant : demandez à un parent de recharger votre portefeuille." />}
@@ -287,6 +292,7 @@ const styles = StyleSheet.create({
   ligneTitre: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   nom: { flex: 1, fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
   prix: { fontSize: 18, fontWeight: '800', color: Colors.primaryDark },
+  prixBarre: { fontSize: 13, color: Colors.textTertiary, textDecorationLine: 'line-through' },
   note: { fontSize: 14, color: Colors.textPrimary, fontWeight: '600' },
   sousNote: { color: Colors.textSecondary, fontWeight: '400' },
   urgence: { fontSize: 13, fontWeight: '700', color: Colors.warning },

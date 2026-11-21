@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, router } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ListeSkeleton } from '../../components/ui/Skeleton';
+import { NoterSheet } from './NoterSheet';
 import { Colors } from '../../constants/colors';
 import {
   aujourdhui,
@@ -43,6 +44,7 @@ export function EcranReservations() {
   const [aAnnuler, setAAnnuler] = useState<Reservation | null>(null);
   const [annulation, setAnnulation] = useState(false);
   const [messageAnnulation, setMessageAnnulation] = useState('');
+  const [aNoter, setANoter] = useState<Reservation | null>(null);
 
   const charger = useCallback(async () => {
     try {
@@ -174,13 +176,25 @@ export function EcranReservations() {
                       {jourLong(r.date)} · {fcfa(r.prix)}
                     </Text>
                   </View>
-                  <Badge label={STATUT[r.statut].libelle} tone={STATUT[r.statut].ton} />
+                  <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                    <Badge label={STATUT[r.statut].libelle} tone={STATUT[r.statut].ton} />
+                    {r.statut === 'SERVIE' &&
+                      (r.note ? (
+                        <Text style={styles.noteDonnee}>★ {r.note}</Text>
+                      ) : (
+                        <TouchableOpacity onPress={() => setANoter(r)} accessibilityRole="button" accessibilityLabel={`Noter ${r.plat.nom}`}>
+                          <Text style={styles.noter}>Noter ce repas</Text>
+                        </TouchableOpacity>
+                      ))}
+                  </View>
                 </View>
               ))
             )}
           </>
         )}
       </ScrollView>
+
+      <NoterSheet reservation={aNoter} onClose={() => setANoter(null)} onNote={charger} />
 
       <ConfirmModal
         visible={!!aAnnuler}
@@ -232,6 +246,8 @@ const styles = StyleSheet.create({
   allergieTexte: { flex: 1, color: Colors.error, fontSize: 12, fontWeight: '600', lineHeight: 17 },
   regle: { textAlign: 'center', fontSize: 12, color: Colors.textSecondary },
   section: { fontSize: 13, fontWeight: '700', color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 24, marginBottom: 10 },
+  noter: { fontSize: 12, fontWeight: '800', color: Colors.primary },
+  noteDonnee: { fontSize: 13, fontWeight: '800', color: '#b45309' },
   vide: { fontSize: 13, color: Colors.textSecondary },
   ligne: {
     flexDirection: 'row',

@@ -27,6 +27,7 @@ export default function RootLayout() {
         <Stack.Screen name="(eleve)" />
         <Stack.Screen name="(parent)" />
         <Stack.Screen name="(cuisine)" />
+        <Stack.Screen name="notifications" />
       </Stack>
     </AuthProvider>
   );

@@ -64,7 +64,7 @@ export interface Reservation {
   prix: number;
   antiGaspi: boolean;
   servieLe: string | null;
-  note: { etoiles: number } | null;
+  note: number | null;
   plat: { id: string; nom: string; categorie: Categorie };
   creneau: { id: string; heureDebut: string; heureFin: string };
   eleve: { id: string; nom: string; initiales: string; classe: string | null; allergenes: Allergene[] };
@@ -138,6 +138,35 @@ export interface Recharge {
   urlPaiement?: string;
 }
 
+export interface ProfilEleve {
+  nom: string;
+  classe: string | null;
+  codeLiaison: string | null;
+  allergenes: Allergene[];
+  solde: number;
+  seuilAlerte: number;
+  soldeBas: boolean;
+  parents: string[];
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  titre: string;
+  corps: string;
+  lue: boolean;
+  creeLe: string;
+}
+
+export interface OffreAntiGaspi {
+  menuItemId: string;
+  plat: { id: string; nom: string; photoUrl: string | null; prix: number };
+  prix: number;
+  prixAntiGaspi: number;
+  jusqua: string;
+  portionsRestantes: number | null;
+}
+
 // ─── Appels ─────────────────────────────────────────────────────────────────
 
 const lire = async <T>(url: string, params?: Record<string, string | undefined>): Promise<T> =>
@@ -148,9 +177,16 @@ export const cantineApi = {
   creneaux: (date: string) => lire<Creneau[]>(`/menus/${date}/creneaux`),
   portefeuille: () => lire<Portefeuille>('/portefeuille/me'),
 
-  reserver: async (menuItemId: string, creneauId: string): Promise<Reservation> =>
-    (await api.post<{ data: Reservation }>('/reservations', { menuItemId, creneauId })).data.data,
+  reserver: async (menuItemId: string, creneauId: string, antiGaspi = false): Promise<Reservation> =>
+    (await api.post<{ data: Reservation }>('/reservations', { menuItemId, creneauId, antiGaspi })).data.data,
   mesReservations: () => lire<MesReservations>('/reservations/me'),
+  noter: async (id: string, etoiles: number, etiquettes: string[], commentaire: string): Promise<void> => {
+    await api.post(`/reservations/${id}/note`, {
+      etoiles,
+      etiquettes: etiquettes.length ? etiquettes : undefined,
+      commentaire: commentaire.trim() || undefined,
+    });
+  },
   annuler: async (id: string): Promise<void> => {
     await api.delete(`/reservations/${id}`);
   },
@@ -160,6 +196,13 @@ export const cantineApi = {
   definirAllergies: async (codes: string[]): Promise<Allergene[]> =>
     (await api.put<{ data: Allergene[] }>('/eleves/me/allergenes', { codes })).data.data,
   codeLiaison: () => lire<{ codeLiaison: string }>('/eleves/me/code-liaison'),
+
+  profilEleve: () => lire<ProfilEleve>('/eleves/me/profil'),
+  notifications: () => lire<{ nonLues: number; notifications: Notification[] }>('/notifications/me'),
+  toutLire: async (): Promise<void> => {
+    await api.post('/notifications/me/tout-lire');
+  },
+  offres: () => lire<OffreAntiGaspi[]>('/anti-gaspi/offres'),
 
   // Parent
   enfants: () => lire<Enfant[]>('/parents/me/enfants'),
