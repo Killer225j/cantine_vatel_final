@@ -1,21 +1,30 @@
 @use '../../../styles/tokens' as t;
 
+:host {
+  display: block;
+}
+
 .cv-card {
   background: t.$cv-card;
   border: 1px solid t.$cv-border;
   border-radius: t.$cv-radius-md;
   padding: 16px 18px;
 
-  &--pad-sm { padding: 10px 12px; }
+  &--pad-sm {
+    padding: 10px 12px;
+  }
 
   &--hoverable {
     cursor: pointer;
-    transition: transform 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms;
+    transition:
+      transform 150ms ease-out,
+      box-shadow 150ms ease-out,
+      border-color 150ms;
 
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(15, 23, 42, .08);
-      border-color: #F3D3D3;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      border-color: #f3d3d3;
     }
   }
 }
@@ -23,6 +32,8 @@
 @media (prefers-reduced-motion: reduce) {
   .cv-card--hoverable {
     transition: none;
-    &:hover { transform: none; }
+    &:hover {
+      transform: none;
+    }
   }
 }

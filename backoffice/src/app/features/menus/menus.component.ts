@@ -163,7 +163,10 @@ const FORME_VIDE: Forme = {
           >
         </div>
 
-        <div class="grid gap-2.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div
+          class="grid gap-2.5 grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
+          [style.--cols]="s.jours.length"
+        >
           @for (j of s.jours; track j.date) {
             <section
               class="bg-white rounded-xl shadow-sm border flex flex-col min-w-0"
@@ -311,7 +314,7 @@ const FORME_VIDE: Forme = {
     <!-- ─── Modale : ajouter / modifier un plat du jour ─────────── -->
     @if (forme(); as f) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3"
+        class="fixed inset-0 z-[3000] bg-black/40 flex items-center justify-center p-3"
         (click)="forme.set(null)"
       >
         <div
@@ -538,7 +541,7 @@ const FORME_VIDE: Forme = {
     <!-- ─── Modale : confirmer la publication ───────────────────── -->
     @if (confirmation(); as c) {
       <div
-        class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+        class="fixed inset-0 z-[3000] bg-black/40 flex items-center justify-center p-4"
         (click)="confirmation.set(null)"
       >
         <div

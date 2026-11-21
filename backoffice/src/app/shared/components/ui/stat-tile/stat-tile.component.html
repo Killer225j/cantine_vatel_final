@@ -1,4 +1,9 @@
 <div class="cv-stat">
-  <b class="cv-stat__value">{{ value() }}</b>
-  <span class="cv-stat__label">{{ label() }}</span>
+  <div class="cv-stat__txt">
+    <b class="cv-stat__value">{{ value() }}</b>
+    <span class="cv-stat__label">{{ label() }}</span>
+  </div>
+  @if (icon()) {
+    <span class="cv-stat__ic" aria-hidden="true"><i class="pi {{ icon() }}"></i></span>
+  }
 </div>

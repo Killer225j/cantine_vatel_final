@@ -10,4 +10,6 @@ import { Component, input } from '@angular/core';
 export class StatTileComponent {
   value = input.required<string | number>();
   label = input.required<string>();
+  /** Icône PrimeIcons affichée à droite (ex. « pi-box »). */
+  icon = input('');
 }

@@ -1,6 +1,28 @@
 @use '../../../styles/tokens' as t;
 
 .cv-stat {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  &__txt {
+    min-width: 0;
+  }
+
+  &__ic {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e7f3fc;
+    color: #1b6fa8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
   background: t.$cv-card;
   border: 1px solid t.$cv-border;
   border-radius: t.$cv-radius-md;
