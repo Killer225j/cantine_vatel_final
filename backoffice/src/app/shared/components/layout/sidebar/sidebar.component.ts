@@ -36,6 +36,7 @@ export class SidebarComponent {
     { label: 'Plats', icon: 'pi-book', route: '/plats', roles: ['ADMIN'] },
     { label: 'Commandes', icon: 'pi-list-check', route: '/commandes', roles: TOUS },
     { label: 'Comptoir', icon: 'pi-qrcode', route: '/comptoir', roles: TOUS },
+    { label: 'Anti-gaspillage', icon: 'pi-heart', route: '/anti-gaspi', roles: TOUS },
     { label: 'Stocks', icon: 'pi-box', route: '/stocks', roles: TOUS },
     { label: 'Rapports', icon: 'pi-chart-bar', route: '/rapports', roles: ['ADMIN'] },
   ];

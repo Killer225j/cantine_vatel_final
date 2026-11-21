@@ -52,6 +52,7 @@ export interface ItemMenu {
   id: string;
   portionsPrevues: number | null;
   prixAntiGaspi: number | null;
+  antiGaspiJusqua: string | null;
   plat: Plat;
   incompatible: boolean;
 }
@@ -85,6 +86,7 @@ export interface Reservation {
   date: string;
   statut: StatutReservation;
   prix: number;
+  antiGaspi: boolean;
   servieLe: string | null;
   servieePar: string | null;
   controleAllergie: boolean;
@@ -256,6 +258,15 @@ export class CantineApi {
     return this.http
       .post<Enveloppe<Reservation>>(`${this.base}/reservations/${id}/servir`, { controleAllergie })
       .pipe(map((r) => r.data));
+  }
+  lancerOffre(date: string, o: { reduction: number; dureeMinutes: number }) {
+    return this.http.post<Enveloppe<{ plats: number; elevesNotifies: number; jusqua: string }>>(
+      `${this.base}/menus/${date}/anti-gaspi`,
+      o,
+    );
+  }
+  cloreOffre(date: string) {
+    return this.http.delete<Enveloppe<unknown>>(`${this.base}/menus/${date}/anti-gaspi`);
   }
   creneauxDuJour(date: string): Observable<Creneau[]> {
     return this.get(`/menus/${date}/creneaux`);

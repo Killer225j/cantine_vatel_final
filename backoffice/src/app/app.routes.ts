@@ -61,6 +61,13 @@ export const routes: Routes = [
           import('./features/commandes/commandes.component').then((m) => m.CommandesComponent),
       },
       {
+        path: 'anti-gaspi',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'CUISINE'] },
+        loadComponent: () =>
+          import('./features/anti-gaspi/anti-gaspi.component').then((m) => m.AntiGaspiComponent),
+      },
+      {
         path: 'comptoir',
         canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'CUISINE'] },
