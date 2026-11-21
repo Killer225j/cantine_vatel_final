@@ -61,7 +61,7 @@
     { "email": "admin@vatel.ci", "role": "ADMIN", "firstName": "Yann", "lastName": "ZAOU", "phone": "+2250700000001" },
     { "email": "cuisine@vatel.ci", "role": "CUISINE", "firstName": "Bolou", "lastName": "ZAOU", "phone": "+2250700000002" },
     { "email": "parent@vatel.ci", "role": "PARENT", "firstName": "Aya", "lastName": "Koffi", "phone": "+2250700000003", "enfants": ["eleve@vatel.ci"] },
-    { "email": "eleve@vatel.ci", "role": "ELEVE", "firstName": "Koffi", "lastName": "Koffi", "phone": "+2250700000010", "classe": "Bachelor 1", "allergenes": ["ARACHIDES"], "solde": 3000, "codeLiaison": "KOF-4821" },
+    { "email": "eleve@vatel.ci", "role": "ELEVE", "firstName": "Yann", "lastName": "Koffi", "phone": "+2250700000010", "classe": "Bachelor 1", "allergenes": ["ARACHIDES"], "solde": 3000, "codeLiaison": "KOF-4821" },
     { "email": "awa.traore@vatel.ci", "role": "ELEVE", "firstName": "Awa", "lastName": "Traoré", "classe": "Bachelor 2", "allergenes": [], "solde": 6500 },
     { "email": "yao.kouassi@vatel.ci", "role": "ELEVE", "firstName": "Yao", "lastName": "Kouassi", "classe": "Bachelor 2", "allergenes": [], "solde": 4200 },
     { "email": "christelle.yapi@vatel.ci", "role": "ELEVE", "firstName": "Christelle", "lastName": "Yapi", "classe": "Bachelor 3", "allergenes": ["ARACHIDES"], "solde": 5000 },

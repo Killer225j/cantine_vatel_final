@@ -25,23 +25,23 @@ Mot de passe commun : **`Cantine2026!`**. Sur la page de connexion, le bloc *Com
 | Administration — Yann ZAOU | `admin@vatel.ci` | Back-office |
 | Cuisine — Bolou ZAOU | `cuisine@vatel.ci` | Back-office **et** mobile (scan au comptoir) |
 | Parent — Aya Koffi | `parent@vatel.ci` | Mobile |
-| Élève — Koffi Koffi (allergie arachide) | `eleve@vatel.ci` | Mobile |
+| Élève — Yann Koffi (allergie arachide) | `eleve@vatel.ci` | Mobile |
 
 ## Ce que fait l'application
 
 ### 🕑 Zéro file — réserver un créneau
-- L'élève voit le **menu de la semaine** et choisit **un plat et un créneau** (5 créneaux de 15 minutes, 40 couverts chacun). Les créneaux complets sont grisés, une jauge montre le remplissage.
+- L'élève voit le **menu de la semaine** et choisit **un plat et un créneau** (5 créneaux de 15 minutes, 40 couverts chacun). Chaque créneau affiche sa jauge et ses places restantes ; un créneau complet passe en rouge et ne peut plus être choisi. Un élève peut réserver jusqu'à 3 repas par jour.
 - Il obtient un **QR code** et un code de secours `RV-XXXX-XXXX-XXXX`, disponibles hors ligne.
 - Le **portefeuille** est débité à la réservation ; l'annulation est gratuite et remboursée jusqu'à 10 h le jour du repas.
-- Le parent **recharge** le compte de son enfant (paiement mobile simulé : Wave, Orange Money, MTN, Moov) et reçoit une alerte quand le solde passe sous le seuil.
+- Le parent **recharge** le compte de son enfant (paiement mobile simulé : Wave, Orange Money, MTN, Moov) et reçoit une alerte quand le solde passe sous le seuil, qu'il règle lui-même pour chaque enfant. L'élève peut aussi recharger son propre compte, ou **envoyer une demande de recharge** à son parent lié (notification).
 
 ### 🌱 Zéro gaspi — préparer le bon nombre de portions
 - **Prévision par plat** : `réservés × (1 − taux d'absence des 4 dernières semaines) + 5 % de marge`.
-- **Offre de fin de service** : la cuisine lance un prix réduit (−30 / −50 / −70 %) pendant 30 à 60 minutes ; les élèves sont notifiés et réservent au prix réduit.
+- **Offre de fin de service** : la cuisine lance un prix réduit (−30 / −50 / −70 %) pendant 30 à 60 minutes et choisit qui est prévenu (élèves présents, tous les élèves, ou élèves et parents) ; ils réservent au prix réduit.
 - Suivi des **kg sauvés**, **stocks** avec seuils d'alerte et mouvements, **rapports** exportables en CSV.
 
 ### 🛡️ Zéro risque — l'allergie arrête le service
-- L'élève (ou son parent) **déclare ses allergies** ; les plats concernés sont **signalés en rouge** dans le menu.
+- L'élève (ou son parent, depuis les réglages de l'enfant) **déclare les allergies** ; les plats concernés sont **signalés en rouge** dans le menu.
 - Au **comptoir**, le scan du QR affiche **« ALLERGIE : ARACHIDE »** et **bloque le service** tant que deux contrôles ne sont pas cochés.
 - Un code déjà utilisé est refusé (**« ne pas servir »**) : pas de double service, pas de fraude.
 
@@ -80,7 +80,7 @@ Les trois dossiers sont indépendants (un `package.json` chacun).
 ## Règles métier
 
 - **Jusqu'à 3 repas réservés par élève et par jour** (réglable avec la variable `RESERVATIONS_MAX_PAR_JOUR`), chacun avec son plat, son créneau et son QR code. Vérifié dans une transaction Serializable : deux élèves qui prennent la dernière place en même temps, l'un reçoit « créneau complet ».
-- **L'API est gardée éveillée** par un appel de santé toutes les 10 minutes (GitHub Actions) et réveillée à l'ouverture des écrans de connexion.
+- **L'API est réveillée dès l'ouverture** de l'appli mobile et de la page de connexion du back-office : l'offre gratuite de Render s'endort après 15 minutes sans requête.
 - **Débit à la réservation**, remboursé si annulation avant 10 h (heure d'Abidjan, UTC).
 - **Un code ne sert qu'une fois** ; le service d'un plat allergène exige la confirmation du contrôle (côté API, pas seulement côté écran).
 - **Paiement mobile simulé** : la recharge ouvre une page de paiement fictive (Wave, Orange Money, MTN, Moov) ; aucun argent ne circule. Le crédit et le reçu `RC-…` sont réels dans la base.
@@ -98,7 +98,9 @@ Les trois dossiers sont indépendants (un `package.json` chacun).
 - **Authentification** : JWT d'accès court + jeton de rafraîchissement stocké sous forme d'**empreinte SHA-256** (rejeu impossible), rôles appliqués par un garde global (`@Roles`).
 - **Réponses uniformes** : `{ success, data, meta? }` ; erreurs `{ success: false, error: { code, message, reason } }` avec une `reason` stable lue par les clients.
 - **Modèle de données** : utilisateurs, liens parent-élève, allergènes, plats, menus du jour et leurs plats, créneaux, réservations, portefeuilles et transactions, avis, notifications, stocks et mouvements (migration dans `backend/prisma/migrations`).
-- **Données de démonstration** : `yarn seed` crée ~200 comptes, 18 plats ivoiriens, six semaines de menus, 3 300 réservations d'historique (taux d'absence ≈ 6 %), recharges, avis et stocks. Les soldes sont égaux à la somme des transactions.
+- **Données de démonstration** : `yarn seed` crée ~200 comptes, 18 plats ivoiriens, des menus sur plusieurs semaines, ~3 000 réservations d'historique (taux d'absence ≈ 6 %), recharges, avis et stocks. Les soldes sont égaux à la somme des transactions. Pour les tests du jury : le jour de la démo et les trois jours ouvrés suivants sont publiés avec **120 réservations par jour** (un créneau complet, un presque plein, un vide…), et les deux derniers jours de la semaine suivante sont des **brouillons** à publier soi-même.
+- **Sécurité** : en-têtes `helmet`, limite de débit (300 requêtes par minute, 30 pour la connexion), mots de passe hachés avec bcrypt (coût 10, ré-enregistré au coût courant à la connexion), validation stricte des entrées (liste blanche), contrôle des rôles côté API.
+- **Performances** : les rapports sont agrégés en base, index sur les clés de jointure et les filtres, miniatures de 240 px pour les photos des listes, menu mobile en un seul appel. Mesuré sur l'API déployée : la plupart des routes répondent à quelques dizaines de millisecondes de l'aller-retour réseau (≈ 140 ms depuis un poste en Europe).
 
 ## Lancer en local
 
@@ -144,8 +146,7 @@ Si le Wi-Fi isole les appareils, utiliser le tunnel : `npx expo start --tunnel`.
 ## Limites assumées et pistes
 
 - **Paiement simulé** : à brancher sur les API Wave / Orange Money / MTN pour la production.
-- **Notifications** : enregistrées et affichées dans l'appli ; l'envoi *push* (Expo Notifications) reste à faire.
+- **Notifications** : enregistrées et affichées dans l'appli ; l'envoi *push* (Expo Notifications) reste à faire. Les trois réglages de notification sont enregistrés sur le compte, mais seule l'alerte de solde bas en tient compte pour l'instant.
+- **Langue** : l'appli est en français ; l'anglais est annoncé « bientôt » dans le profil. « Mot de passe oublié » affiche une aide, sans envoi de courriel.
 - **Hors ligne** : le QR code reste affiché sans réseau ; une file de scans hors ligne au comptoir serait la suite logique.
 - **Photos de plats** : fichiers statiques du back-office ; un envoi depuis l'interface demanderait un stockage d'objets.
-
-

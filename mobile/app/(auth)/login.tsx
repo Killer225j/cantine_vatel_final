@@ -28,7 +28,7 @@ const initialForm: LoginForm = {
 
 /** Comptes de démonstration : un appui et on est connecté. */
 const COMPTES_DEMO = [
-  { libelle: 'Élève · Koffi', email: 'eleve@vatel.ci', icone: 'school-outline' as const },
+  { libelle: 'Élève · Yann', email: 'eleve@vatel.ci', icone: 'school-outline' as const },
   { libelle: 'Parent · Aya', email: 'parent@vatel.ci', icone: 'people-outline' as const },
   { libelle: 'Cuisine · Bolou', email: 'cuisine@vatel.ci', icone: 'restaurant-outline' as const },
 ];
