@@ -39,27 +39,34 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
-      section(
-        'menus',
-        ['ADMIN'],
-        'Menus de la semaine',
-        'pi-calendar',
-        'Créer et publier les menus : plats du jour, prix, allergènes et portions prévues.',
-      ),
-      section(
-        'commandes',
-        ['ADMIN', 'CUISINE'],
-        'Commandes du jour',
-        'pi-list-check',
-        'Les réservations par créneau, en direct, pour préparer le bon nombre de portions.',
-      ),
-      section(
-        'comptoir',
-        ['ADMIN', 'CUISINE'],
-        'Comptoir',
-        'pi-qrcode',
-        'Scanner le QR code de réservation, avec alerte allergie au moment du service.',
-      ),
+      {
+        path: 'menus',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/menus/menus.component').then((m) => m.MenusComponent),
+      },
+      {
+        path: 'plats',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+          import('./features/plats/plats.component').then((m) => m.PlatsComponent),
+      },
+      {
+        path: 'commandes',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'CUISINE'] },
+        loadComponent: () =>
+          import('./features/commandes/commandes.component').then((m) => m.CommandesComponent),
+      },
+      {
+        path: 'comptoir',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'CUISINE'] },
+        loadComponent: () =>
+          import('./features/comptoir/comptoir.component').then((m) => m.ComptoirComponent),
+      },
       section(
         'stocks',
         ['ADMIN', 'CUISINE'],

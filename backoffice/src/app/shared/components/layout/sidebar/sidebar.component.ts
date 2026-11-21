@@ -33,6 +33,7 @@ export class SidebarComponent {
   navItems: NavItem[] = [
     { label: 'Tableau de bord', icon: 'pi-th-large', route: '/dashboard', roles: TOUS },
     { label: 'Menus', icon: 'pi-calendar', route: '/menus', roles: ['ADMIN'] },
+    { label: 'Plats', icon: 'pi-book', route: '/plats', roles: ['ADMIN'] },
     { label: 'Commandes', icon: 'pi-list-check', route: '/commandes', roles: TOUS },
     { label: 'Comptoir', icon: 'pi-qrcode', route: '/comptoir', roles: TOUS },
     { label: 'Stocks', icon: 'pi-box', route: '/stocks', roles: TOUS },
