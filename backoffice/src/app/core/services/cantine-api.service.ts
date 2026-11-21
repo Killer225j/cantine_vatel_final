@@ -46,6 +46,8 @@ export interface Plat {
   allergenes: Allergene[];
   noteMoyenne: number | null;
   nbAvis: number;
+  /** Repas servis depuis le début du mois (renvoyé par la liste des plats). */
+  servisMois?: number;
 }
 
 export interface ItemMenu {
@@ -139,6 +141,13 @@ export interface StatsJour {
   alertesAllergie: AlerteAllergie[];
 }
 
+export interface JourReservations {
+  date: string;
+  reservees: number;
+  servies: number;
+  absents: number;
+}
+
 export interface LignePrevision {
   menuItemId: string;
   plat: { nom: string; categorie: Categorie };
@@ -187,6 +196,9 @@ export class CantineApi {
   // Statistiques
   statsJour(date?: string): Observable<StatsJour> {
     return this.get('/stats/jour', { date });
+  }
+  reservations7Jours(date?: string): Observable<JourReservations[]> {
+    return this.get('/stats/reservations', { date });
   }
   prevision(date?: string): Observable<Prevision> {
     return this.get('/stats/prevision', { date });

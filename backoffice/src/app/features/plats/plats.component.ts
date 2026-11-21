@@ -149,7 +149,8 @@ const VIDE: Brouillon = {
                   <th class="py-2 pr-3 font-semibold">Catégorie</th>
                   <th class="py-2 pr-3 font-semibold text-right">Prix</th>
                   <th class="py-2 pr-3 font-semibold">Allergènes</th>
-                  <th class="py-2 pr-3 font-semibold">Note</th>
+                  <th class="py-2 pr-3 font-semibold">Note moyenne</th>
+                  <th class="py-2 pr-3 font-semibold text-right">Servis (mois)</th>
                   <th class="py-2 pr-3 font-semibold">Statut</th>
                   <th class="py-2 font-semibold"></th>
                 </tr>
@@ -190,6 +191,9 @@ const VIDE: Brouillon = {
                       } @else {
                         <span class="text-gray-400">—</span>
                       }
+                    </td>
+                    <td class="py-2.5 pr-3 text-right font-semibold text-gray-700">
+                      {{ p.servisMois ?? 0 }}
                     </td>
                     <td class="py-2.5 pr-3">
                       <app-badge [color]="p.actif ? 'success' : 'neutral'">{{

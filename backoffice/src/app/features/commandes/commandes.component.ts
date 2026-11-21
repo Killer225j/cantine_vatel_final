@@ -16,6 +16,7 @@ import { BadgeColor, BadgeComponent } from '../../shared/components/ui/badge/bad
 import { CardComponent } from '../../shared/components/ui/card/card.component';
 import { EmptyStateComponent } from '../../shared/components/ui/empty-state/empty-state.component';
 import { SkeletonComponent } from '../../shared/components/ui/skeleton/skeleton.component';
+import { StatTileComponent } from '../../shared/components/ui/stat-tile/stat-tile.component';
 
 const STATUTS: Record<StatutReservation, { libelle: string; couleur: BadgeColor }> = {
   CONFIRMEE: { libelle: 'À servir', couleur: 'info' },
@@ -29,6 +30,7 @@ const STATUTS: Record<StatutReservation, { libelle: string; couleur: BadgeColor 
   standalone: true,
   imports: [
     DatePipe,
+    StatTileComponent,
     FormsModule,
     RouterLink,
     BadgeComponent,
@@ -72,10 +74,7 @@ const STATUTS: Record<StatutReservation, { libelle: string; couleur: BadgeColor 
     @if (donnees(); as d) {
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
         @for (t of tuiles(); track t.label) {
-          <div class="bg-white rounded-xl p-4 shadow-sm">
-            <p class="text-2xl font-bold" [class]="t.classe">{{ t.valeur }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ t.label }}</p>
-          </div>
+          <app-stat-tile [value]="t.valeur" [label]="t.label" [icon]="t.icone" />
         }
       </div>
 
@@ -234,11 +233,16 @@ export class CommandesComponent implements OnInit {
     const c = this.donnees()?.compteurs;
     if (!c) return [];
     return [
-      { label: 'Réservations', valeur: c.total, classe: 'text-vatel-primary-dark' },
-      { label: 'Servies', valeur: c.servies, classe: 'text-success' },
-      { label: 'À servir', valeur: c.aServir, classe: 'text-vatel-primary' },
-      { label: 'Absents', valeur: c.absents, classe: 'text-warning' },
-      { label: 'Annulées', valeur: c.annulees, classe: 'text-gray-500' },
+      {
+        label: 'Réservations',
+        valeur: c.total,
+        classe: 'text-vatel-primary-dark',
+        icone: 'pi-list-check',
+      },
+      { label: 'Servies', valeur: c.servies, classe: 'text-success', icone: 'pi-check-circle' },
+      { label: 'À servir', valeur: c.aServir, classe: 'text-vatel-primary', icone: 'pi-clock' },
+      { label: 'Absents', valeur: c.absents, classe: 'text-warning', icone: 'pi-user-minus' },
+      { label: 'Annulées', valeur: c.annulees, classe: 'text-gray-500', icone: 'pi-times-circle' },
     ];
   });
 

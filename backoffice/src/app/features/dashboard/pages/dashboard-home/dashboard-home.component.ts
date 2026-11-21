@@ -6,6 +6,7 @@ import { forkJoin, interval } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import {
   CantineApi,
+  JourReservations,
   Prevision,
   StatsJour,
   heure,
@@ -43,6 +44,7 @@ export class DashboardHomeComponent implements OnInit {
   stats = signal<StatsJour | null>(null);
   prevision = signal<Prevision | null>(null);
   erreur = signal(false);
+  jours7 = signal<JourReservations[]>([]);
 
   tuiles = computed(() => {
     const s = this.stats();
@@ -125,6 +127,9 @@ export class DashboardHomeComponent implements OnInit {
   }
 
   private charger(): void {
+    this.api
+      .reservations7Jours()
+      .subscribe({ next: (j) => this.jours7.set(j), error: () => undefined });
     forkJoin([this.api.statsJour(), this.api.prevision()]).subscribe({
       next: ([stats, prevision]) => {
         this.stats.set(stats);
@@ -133,6 +138,12 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: () => this.erreur.set(true),
     });
+  }
+
+  /** Hauteur d'une barre (en %) par rapport au plus grand jour de la période. */
+  hauteur(valeur: number): number {
+    const max = Math.max(1, ...this.jours7().map((j) => j.reservees));
+    return Math.round((valeur / max) * 100);
   }
 
   pourcentage(reserves: number, capacite: number): number {
