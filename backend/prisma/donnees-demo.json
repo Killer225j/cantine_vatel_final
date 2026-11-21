@@ -40,11 +40,11 @@
   ],
 
   "menus": {
-    "_regle": "Chaque jour : ses plats + toutes les boissons et desserts. portionsPrevues = valeur de départ (le tableau de bord recalcule la prévision). Vendredi : publie=false (démo de l'état brouillon).",
+    "_regle": "Chaque jour : ses plats + toutes les boissons et desserts. portionsPrevues = valeur de départ (le tableau de bord recalcule la prévision). Jeudi et vendredi : publie=false (brouillons, pour que les testeurs s’exercent à publier).",
     "lundi":    { "publie": true,  "plats": [["attieke-poisson-braise", 60], ["kedjenou-poulet", 45], ["riz-legumes-saute", 20], ["salade-avocat", 30], ["degue", 40]] },
     "mardi":    { "publie": true,  "plats": [["riz-sauce-arachide", 63], ["alloco-poulet", 49], ["garba", 44], ["salade-fruits", 40]] },
     "mercredi": { "publie": true,  "plats": [["foutou-sauce-graine", 55], ["attieke-poulet-braise", 50], ["spaghetti-bolognaise", 35], ["degue", 40]] },
-    "jeudi":    { "publie": true,  "plats": [["placali-sauce-gombo", 40], ["garba", 55], ["alloco-poulet", 50], ["salade-fruits", 40]] },
+    "jeudi":    { "publie": false, "plats": [["placali-sauce-gombo", 40], ["garba", 55], ["alloco-poulet", 50], ["salade-fruits", 40]] },
     "vendredi": { "publie": false, "plats": [["riz-gras-poulet", 60], ["foutou-sauce-arachide", 45], ["riz-legumes-saute", 25], ["degue", 40]] },
     "boissonsChaqueJour": ["jus-bissap", "jus-gingembre", "eau-minerale"]
   },

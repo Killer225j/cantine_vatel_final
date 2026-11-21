@@ -416,53 +416,70 @@ async function main(): Promise<void> {
     }
   }
 
-  // ─── 7. Réservations du jour (une seule fois) ─────────────────────────────
-  const jourCourant = menus.get(aujourdHui);
-  const dejaDuJour = await prisma.reservation.count({ where: { date: versDate(aujourdHui) } });
-  if (jourCourant?.publie && dejaDuJour === 0) {
-    const occupation = new Map<string, number>();
-    const pleinCreneau = jourCourant.creneaux.find((c) => c.heureDebut === '12:15');
-    const figurantsDuJour = eleves.filter((e) => e.email !== 'eleve@vatel.ci').slice(0, 150);
-    for (const e of figurantsDuJour) {
-      if (alea() > 0.97) continue;
-      // Les élèves allergiques à l'arachide réservent parfois quand même le plat à l'arachide :
-      // ce sont les « alertes allergie du jour » du tableau de bord et du comptoir.
-      const arachide = jourCourant.items.find((i) =>
-        i.plat.allergenes.some((a) => a.code === 'ARACHIDES'),
-      );
-      const item =
-        (e.allergenes ?? []).includes('ARACHIDES') && arachide && alea() < 0.4
-          ? arachide
-          : platPour(jourCourant, (e.allergenes ?? []) as string[]);
-      if (!item) continue;
-      const libres = jourCourant.creneaux.filter((c) => (occupation.get(c.id) ?? 0) < c.capacite);
-      const creneau =
-        pleinCreneau &&
-        (occupation.get(pleinCreneau.id) ?? 0) < pleinCreneau.capacite &&
-        alea() < 0.4
-          ? pleinCreneau
-          : choisir(libres);
-      if (!creneau) continue;
-      occupation.set(creneau.id, (occupation.get(creneau.id) ?? 0) + 1);
-      const id = randomUUID();
-      reservations.push({
-        id,
-        code: genererCodeVerification(PREFIXE_CODE_RESERVATION),
-        userId: e.user.id,
-        menuItemId: item.id,
-        creneauId: creneau.id,
-        date: versDate(aujourdHui),
-        prix: item.plat.prix,
-        creeLe: new Date(`${ajouterJours(aujourdHui, -1)}T19:00:00Z`),
-      });
-      transactions.push({
-        portefeuilleId: portefeuilles.get(e.user.id)!,
-        type: TypeTransaction.REPAS,
-        montant: -item.plat.prix,
-        reservationId: id,
-        creeLe: new Date(`${ajouterJours(aujourdHui, -1)}T19:00:00Z`),
-      });
-      depenses.set(e.user.id, (depenses.get(e.user.id) ?? 0) + item.plat.prix);
+  // ─── 7. Réservations des jours à venir publiés (une seule fois) ───────────
+  // Le jury teste l'appli sur les jours qui suivent : chaque jour publié a environ 120 réservations,
+  // avec un créneau complet et les autres plus ou moins remplis (vide, presque complet, moyen…), pour
+  // voir toutes les couleurs. Il reste de la place pour que les testeurs réservent eux-mêmes.
+  const PLANS_CRENEAUX = [
+    [14, 28, 40, 26, 12],
+    [30, 40, 22, 6, 22],
+    [26, 35, 40, 0, 19],
+    [40, 18, 30, 12, 20],
+  ];
+  const joursAvecReservations = [
+    ...jourDemo,
+    ...avenir.filter((j) => menuDe(j).publie && !jourDemo.includes(j)),
+  ].filter((j) => menus.get(j)?.publie);
+  const figurantsPossibles = eleves.filter((e) => e.email !== 'eleve@vatel.ci');
+  for (const [rang, jour] of joursAvecReservations.entries()) {
+    const menuDuJour = menus.get(jour)!;
+    const dejaLa = await prisma.reservation.count({ where: { date: versDate(jour) } });
+    if (dejaLa > 0) continue;
+    const plan = PLANS_CRENEAUX[rang % PLANS_CRENEAUX.length];
+    const creneauxTries = [...menuDuJour.creneaux].sort((x, y) =>
+      x.heureDebut.localeCompare(y.heureDebut),
+    );
+    // Les élèves du jour : un tirage différent chaque jour, un repas chacun.
+    const tirage = [...figurantsPossibles]
+      .map((e) => ({ e, k: alea() }))
+      .sort((x, y) => x.k - y.k)
+      .map((x) => x.e);
+    let suivant = 0;
+    for (const [i, creneau] of creneauxTries.entries()) {
+      const voulus = Math.min(plan[i] ?? 0, creneau.capacite);
+      for (let n = 0; n < voulus && suivant < tirage.length; n++) {
+        const e = tirage[suivant++];
+        // Les élèves allergiques à l'arachide réservent parfois quand même le plat à l'arachide :
+        // ce sont les « alertes allergie » du tableau de bord et du comptoir.
+        const arachide = menuDuJour.items.find((it) =>
+          it.plat.allergenes.some((al) => al.code === 'ARACHIDES'),
+        );
+        const item =
+          (e.allergenes ?? []).includes('ARACHIDES') && arachide && alea() < 0.4
+            ? arachide
+            : platPour(menuDuJour, (e.allergenes ?? []) as string[]);
+        if (!item) continue;
+        const id = randomUUID();
+        const creeLe = new Date(`${ajouterJours(aujourdHui, -1)}T19:00:00Z`);
+        reservations.push({
+          id,
+          code: genererCodeVerification(PREFIXE_CODE_RESERVATION),
+          userId: e.user.id,
+          menuItemId: item.id,
+          creneauId: creneau.id,
+          date: versDate(jour),
+          prix: item.plat.prix,
+          creeLe,
+        });
+        transactions.push({
+          portefeuilleId: portefeuilles.get(e.user.id)!,
+          type: TypeTransaction.REPAS,
+          montant: -item.plat.prix,
+          reservationId: id,
+          creeLe,
+        });
+        depenses.set(e.user.id, (depenses.get(e.user.id) ?? 0) + item.plat.prix);
+      }
     }
   }
 
