@@ -197,6 +197,7 @@ export const cantineApi = {
     (await api.put<{ data: Allergene[] }>('/eleves/me/allergenes', { codes })).data.data,
   codeLiaison: () => lire<{ codeLiaison: string }>('/eleves/me/code-liaison'),
 
+  mesTransactions: () => lire<Transaction[]>('/portefeuille/me/transactions'),
   profilEleve: () => lire<ProfilEleve>('/eleves/me/profil'),
   notifications: () => lire<{ nonLues: number; notifications: Notification[] }>('/notifications/me'),
   toutLire: async (): Promise<void> => {

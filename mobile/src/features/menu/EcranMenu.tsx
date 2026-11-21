@@ -18,6 +18,7 @@ import {
 } from '../../api/cantine.api';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { useAuth } from '../auth/useAuth';
+import { SoldeSheet, OngletSolde } from '../portefeuille/SoldeSheet';
 import { ReserverSheet } from './ReserverSheet';
 
 const ORDRE: Categorie[] = ['ENTREE', 'PLAT', 'DESSERT', 'BOISSON'];
@@ -42,6 +43,7 @@ export function EcranMenu() {
   const [erreur, setErreur] = useState('');
   const [rafraichit, setRafraichit] = useState(false);
   const [choisi, setChoisi] = useState<ItemMenu | null>(null);
+  const [solde, setSolde] = useState<{ ouvert: boolean; onglet: OngletSolde }>({ ouvert: false, onglet: 'recharger' });
 
   const charger = useCallback(async () => {
     try {
@@ -95,12 +97,30 @@ export function EcranMenu() {
 
         {/* Solde et rappel d'allergie */}
         <View style={styles.bandeau}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bandeauLibelle}>Mon solde</Text>
-            <Text style={[styles.solde, portefeuille?.soldeBas && { color: Colors.warning }]}>
-              {portefeuille ? fcfa(portefeuille.solde) : '—'}
-            </Text>
-            {portefeuille?.soldeBas && <Text style={styles.soldeBas}>Solde bas : pensez à recharger</Text>}
+          <View style={styles.soldeLigne}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.bandeauLibelle}>Mon solde</Text>
+              <Text style={[styles.solde, portefeuille?.soldeBas && { color: Colors.warning }]}>
+                {portefeuille ? fcfa(portefeuille.solde) : '—'}
+              </Text>
+              {portefeuille?.soldeBas && <Text style={styles.soldeBas}>Solde bas : pensez à recharger</Text>}
+            </View>
+            <TouchableOpacity
+              onPress={() => setSolde({ ouvert: true, onglet: 'historique' })}
+              style={styles.boutonSolde}
+              accessibilityRole="button"
+              accessibilityLabel="Historique du solde"
+            >
+              <Ionicons name="time-outline" size={20} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setSolde({ ouvert: true, onglet: 'recharger' })}
+              style={[styles.boutonSolde, styles.boutonSoldePlus]}
+              accessibilityRole="button"
+              accessibilityLabel="Recharger mon solde"
+            >
+              <Ionicons name="add" size={24} color={Colors.white} />
+            </TouchableOpacity>
           </View>
           {semaine && semaine.allergies.length > 0 && (
             <View style={styles.allergie}>
@@ -176,6 +196,14 @@ export function EcranMenu() {
           </>
         )}
       </ScrollView>
+
+      <SoldeSheet
+        visible={solde.ouvert}
+        onglet={solde.onglet}
+        solde={portefeuille?.solde ?? null}
+        onClose={() => setSolde((a) => ({ ...a, ouvert: false }))}
+        onRecharge={charger}
+      />
 
       <ReserverSheet
         item={choisi}
@@ -255,6 +283,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  soldeLigne: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  boutonSolde: { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: Colors.primaryBorder, backgroundColor: Colors.primaryMuted, alignItems: 'center', justifyContent: 'center' },
+  boutonSoldePlus: { backgroundColor: Colors.primary, borderColor: Colors.primaryDark, borderBottomWidth: 3, shadowColor: '#0d3a5c', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 3 }, elevation: 4 },
   bandeauLibelle: { fontSize: 12, color: Colors.textSecondary },
   solde: { fontSize: 24, fontWeight: '800', color: Colors.primaryDark },
   soldeBas: { fontSize: 12, color: Colors.warning, fontWeight: '600', marginTop: 2 },
