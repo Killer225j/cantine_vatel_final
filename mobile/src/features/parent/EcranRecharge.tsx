@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Colors } from '../../constants/colors';
 import { cantineApi, Enfant, fcfa, Moyen, Recharge } from '../../api/cantine.api';
 import { getApiErrorMessage } from '../../utils/apiError';
+import { lirePrefs } from '../../utils/prefs';
 
 const MONTANTS = [2000, 5000, 10000, 20000];
 const MOYENS: { code: Moyen; libelle: string; couleur: string }[] = [
@@ -28,6 +29,11 @@ export function EcranRecharge() {
   const [erreur, setErreur] = useState('');
   const [recharge, setRecharge] = useState<Recharge | null>(null);
   const minuterie = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Le moyen de paiement par défaut vient du profil du parent.
+  useEffect(() => {
+    lirePrefs().then((p) => setMoyen(p.moyen));
+  }, []);
 
   const chargerEnfants = useCallback(async () => {
     try {
