@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { AvecCloche } from '../../../src/components/layout/AvecCloche';
 import { CustomTabBar, OngletDef } from '../../../src/components/layout/CustomTabBar';
 
 const ONGLETS: OngletDef[] = [
@@ -9,13 +10,15 @@ const ONGLETS: OngletDef[] = [
 
 export default function CuisineTabsLayout() {
   return (
-    <Tabs
+    <AvecCloche>
+      <Tabs
       screenOptions={{ headerShown: false }}
       tabBar={(props) => <CustomTabBar {...props} onglets={ONGLETS} />}
     >
       {ONGLETS.map((o) => (
         <Tabs.Screen key={o.name} name={o.name} options={{ title: o.label }} />
       ))}
-    </Tabs>
+      </Tabs>
+    </AvecCloche>
   );
 }
