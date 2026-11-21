@@ -62,10 +62,6 @@ export default function RegisterScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <TouchableOpacity onPress={() => router.back()} style={styles.back} accessibilityLabel="Retour">
-            <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
-
           <Text style={styles.title}>Créer un compte</Text>
           <Text style={styles.subtitle}>Vous êtes…</Text>
 
